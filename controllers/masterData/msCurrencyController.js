@@ -3,25 +3,25 @@
 const chalk = require('chalk');
 const { request } = require('express');
 const db = require('../../config/sequelize');
-const msChargeModel = db.masterChargeTypes;
+const msCurrencyModel = db.masterCurrency;
 const AppError = require('../../utils/appError')
 
 
-const addMsCharges = async (req, res) => {
+const addMsCurrencys = async (req, res) => {
     // Extract userId from JWT token
     const userId = req.user.id;
 
     if (req.body && Array.isArray(req.body)) {
         const datas = req.body.map(
-            charges => {
-                return {
-                    sequence: charges.sequence ?? 0,
-                    description: charges.description,
+            Currencys => {
+                return {                    
+                    symbol: charges.symbol,
+                    name: charges.name,
                     status: 1,
                     createdBy:userId,
                 }
             });
-        await msChargeModel.bulkCreate(datas).then(data => {
+        await msCurrencyModel.bulkCreate(datas).then(data => {
             res.status(201).send({ data: data, message: 'Data created successfully' });
         })
             .catch(err => {
@@ -37,18 +37,18 @@ const addMsCharges = async (req, res) => {
     }
 }
 
-const getMsCharges = async (req, res, next) => {
+const getMsCurrencys = async (req, res, next) => {
     if (!req.query.size || !req.query.page) return res.status(500).send({ message: 'page number and page size are required !' })
     let pageSize = +req.query.size;
     if (pageSize > 100) {
         pageSize = 100;
     }
     let pageOffset = ((+req.query.page - 1) * +req.query.size);
-    const data = await msChargeModel.findAll({
+    const data = await msCurrencyModel.findAll({
         data: [
             'id',
-            'sequence',
-            'description',
+            'symbol',
+            'name',
             'status'
         ],
         offset: pageOffset,
@@ -63,10 +63,10 @@ const getMsCharges = async (req, res, next) => {
 
 }
 
-const getMsCharge = async (req, res) => {
+const getMsCurrency = async (req, res) => {
     const id = req.params.id;
-    const data = await msChargeModel.findOne({
-        attributes: ['id', 'sequence', 'description', 'status'],
+    const data = await msCurrencyModel.findOne({
+        attributes: ['id', 'symbol', 'name', 'status'],
         where: {
             id: id
         }
@@ -80,21 +80,21 @@ const getMsCharge = async (req, res) => {
 
 }
 
-const editMsCharge = async (req, res) => {
+const editMsCurrency = async (req, res) => {
     const id = req.params.id;
     // Extract userId from JWT token
     const userId = req.user.id;
     if (req.body && Array.isArray(req.body)) {
-        const breakfasts = req.body.map(
-            breakfast => {
+        const currencies = req.body.map(
+            currency => {
                 return {
-                    sequence: breakfast.sequence,
-                    description: breakfast.description,
-                    status: breakfast.status,
+                    symbol: currency.symbol,
+                    name: currency.name,
+                    status: currency.status,
                     updatedBy:userId,
                 }
             });
-        const updatedData = await msChargeModel.update(breakfasts, { where: { id: id } });
+        const updatedData = await msCurrencyModel.update(currencies, { where: { id: id } });
 
         if (updatedData[0] > 0) {
             res.status(200).send({ message: 'Success Updated the data.', data: updatedData });
@@ -108,9 +108,9 @@ const editMsCharge = async (req, res) => {
 
 }
 
-const deleteMsCharge = async (req, res) => {
+const deleteMsCurrency = async (req, res) => {
     const id = req.params.id;
-    const deletedData = await msChargeModel.destroy({ where: { id: id } });
+    const deletedData = await msCurrencyModel.destroy({ where: { id: id } });
 
     if (deletedData) {
         res.status(200).send({ message: 'The data deleted successfully.', data: deletedData });
@@ -121,9 +121,9 @@ const deleteMsCharge = async (req, res) => {
 
 
 module.exports = {
-    addMsCharges,
-    getMsCharges,
-    getMsCharge,
-    editMsCharge,
-    deleteMsCharge
+    addMsCurrencys,
+    getMsCurrencys,
+    getMsCurrency,
+    editMsCurrency,
+    deleteMsCurrency
 }

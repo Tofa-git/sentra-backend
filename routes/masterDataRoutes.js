@@ -1,6 +1,6 @@
 "use strict"
 
-const msBreakfastController = require('./../controllers/masterData/msBreakfastController');
+const msBreakfastController = require('../controllers/masterData/msBreakfastController');
 const auth = require('../middlewares/auth');
 
 const router = require('express').Router();

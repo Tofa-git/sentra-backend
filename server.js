@@ -77,8 +77,11 @@ app.use('/api', userRouter)
 const productRouter = require('./routes/productRoutes');
 app.use('/api', productRouter)
 
+const masterDataRouter = require('./routes/masterDataRoutes');
+app.use('/api/master', masterDataRouter)
+
 const documentationRouter = require('./docs');
-app.use('/api-docs', swaggerUI.serve,swaggerUI.setup(documentationRouter))
+app.use('/api/doc', swaggerUI.serve,swaggerUI.setup(documentationRouter))
 
 app.listen(port, ()=> {
     console.log('Server is running on port ', port);

@@ -1,6 +1,6 @@
 "use strict"
 
-const productController = require('./../controllers/productController');
+const productController = require('../controllers/productController');
 const auth = require('../middlewares/auth');
 
 const router = require('express').Router();

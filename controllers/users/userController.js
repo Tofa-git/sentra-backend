@@ -10,8 +10,7 @@ const generalConfig = require('../../config/generalConfig');
 
 const createUser = async (req, res, next) => {
     // let passwordHash = generalConfig.encryptPassword(req.body.password);
-    const { firstName, lastName, email, mobile, password, address, roleId } = req.body;
-  
+
     if (req.body && Array.isArray(req.body)) {
         const users = req.body.map(
             user => {
@@ -26,16 +25,18 @@ const createUser = async (req, res, next) => {
                     status: 1,
                 }
             });
-        await userModel.bulkCreate(users);
+        await userModel.bulkCreate(users).then(data => {
+            res.status(201).send({data:data,  message:'user created successfully'});
+        })
+            .catch(err => {
+                res.status(500).send({
+                    data : null,
+                    message:
+                        err.message = 
+                        "Validation Error" ? "The Email is Already Exist" : "Some error occurred while creating the Users."                        
+                });
+            });       
 
-        try {
-        
-            // sendWelcomeEmail(req.body.email, req.body.firstName);
-    
-            res.status(201).send({ data: users, message: 'users created successfully' });
-        } catch {
-            res.status(500).send({ message: 'User already registered !' })
-        }
     }
     // else{
     //     const user = {
@@ -50,22 +51,22 @@ const createUser = async (req, res, next) => {
     //     }
     //     const createdUser = await userModel.create(user);
     //     try {
-        
+
     //         // sendWelcomeEmail(req.body.email, req.body.firstName);
-    
+
     //         res.status(201).send({ createdUser: createdUser, message: 'user created successfully' });
     //     } catch {
     //         res.status(500).send({ message: 'User already registered !' })
     //     }
     // }
-  
+
 }
 
 const loginUser = async (req, res, next) => {
     const { email, password } = req.body;
     if (email) {
         let passwordMatchFlag
-        const user = await userModel.findOne({ attributes: ['firstName', 'lastName', 'email', 'mobile', 'password', 'address'], where: { email: email } });
+        const user = await userModel.findOne({ attributes: ['id','firstName', 'lastName', 'email', 'mobile', 'password', 'address'], where: { email: email } });
 
         if (user) {
             passwordMatchFlag = generalConfig.comparePassword(password, user.password)
