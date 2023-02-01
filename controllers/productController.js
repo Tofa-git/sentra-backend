@@ -18,7 +18,7 @@ const addProduct = async (req, res) => {
     const addedProduct = await productModel.create(product);
 
     if (addedProduct) {
-        res.status(201).send({ message: 'Product added successfully.', addedProduct: addedProduct });
+        res.status(201).send({ message: 'Product added successfully.', data: addedProduct });
     } else {
         res.status(404).send({ message: 'Could not add product.' });
     }
@@ -42,7 +42,7 @@ const getProducts = async (req, res, next) => {
     })
 
     if (products.length > 0) {
-        res.status(200).send({ message: 'Products found.', products: products });
+        res.status(200).send({ message: 'Products found.', data: products });
     } else {
         res.status(404).send({ message: 'Product not found.' });
     }
@@ -61,7 +61,7 @@ const getProduct = async (req, res) => {
     
     if (product) {
         product.imagePath = imageUrl + product.imagePath;
-        res.status(200).send({ message: 'Product found.', product: product });
+        res.status(200).send({ message: 'Product found.', data: product });
     } else {
         res.status(404).send({ message: 'Product not found.' });
     }
@@ -80,7 +80,7 @@ const editProduct = async (req, res) => {
     const updatedProduct = await productModel.update(product, { where: { id: pdoductId } });
 
     if (updatedProduct[0] > 0) {
-        res.status(200).send({ message: 'Product updated successfully.', updatedProduct: updatedProduct });
+        res.status(200).send({ message: 'Product updated successfully.', data: updatedProduct });
     } else {
         res.status(404).send({ message: 'Could not update product.' });
     }
@@ -91,7 +91,7 @@ const deleteProduct = async (req, res) => {
     const deletedProduct = await productModel.destroy({ where: { id: pdoductId } });
 
     if (deletedProduct) {
-        res.status(200).send({ message: 'Product deleted successfully.', deletedProduct: deletedProduct });
+        res.status(200).send({ message: 'Product deleted successfully.', data: deletedProduct });
     } else {
         res.status(404).send({ message: 'Product not deleted.' });
     }

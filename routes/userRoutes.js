@@ -1,6 +1,6 @@
 "use strict"
 const { check, body, validationResult } = require('express-validator/check');
-const userController = require('./../controllers/userController');
+const userController = require('./../controllers/users/userController');
 const router = require('express').Router();
 
 router.post('/signup',
