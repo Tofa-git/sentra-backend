@@ -3,7 +3,7 @@
 const chalk = require('chalk');
 const { request } = require('express');
 const db = require('../../config/sequelize');
-const msSessionModel = db.masterSessionMethod;
+const msSessionModel = db.masterSession;
 const AppError = require('../../utils/appError')
 
 
@@ -101,8 +101,6 @@ const editMsSession = async (req, res) => {
     } else {
         res.status(500).send({ message: 'Bad Request Check Your Request' });
     }
-
-
 }
 
 const deleteMsSession = async (req, res) => {
