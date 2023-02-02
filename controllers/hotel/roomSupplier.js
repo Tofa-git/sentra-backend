@@ -3,11 +3,11 @@
 const chalk = require('chalk');
 const { request } = require('express');
 const db = require('../../config/sequelize');
-const msHotelFacilityModel = db.hotelFacility;
+const msHotelRoomGradeModel = db.hotelRoomGrade;
 const AppError = require('../../utils/appError')
 
 
-const addMsHotelFacilitys = async (req, res) => {
+const addMsHotelRoomGrades = async (req, res) => {
     // Extract userId from JWT token
     const userId = req.user.id;
 
@@ -15,13 +15,18 @@ const addMsHotelFacilitys = async (req, res) => {
         const datas = req.body.map(
             response => {
                 return {                    
+                    supplierId: response.supplierId,
                     hotelId: response.hotelId,
-                    hotelFacilityId: response.hotelFacilityId,
+                    cxlPolicyId: response.cxlPolicyId,
+                    hotelSupplierCode: response.hotelSupplierCode,
+                    prepayment: response.prepayment,
+                    nonXml: response.nonXml,
+                    nonTarif: response.nonTarif,
                     status: 1,
                     createdBy:userId,
                 }
             });
-        await msHotelFacilityModel.bulkCreate(datas).then(data => {
+        await msHotelRoomGradeModel.bulkCreate(datas).then(data => {
             res.status(201).send({ data: data, message: 'Data created successfully' });
         })
             .catch(err => {
@@ -37,18 +42,23 @@ const addMsHotelFacilitys = async (req, res) => {
     }
 }
 
-const getMsHotelFacilitys = async (req, res, next) => {
+const getMsHotelRoomGrades = async (req, res, next) => {
     if (!req.query.size || !req.query.page) return res.status(500).send({ message: 'page number and page size are required !' })
     let pageSize = +req.query.size;
     if (pageSize > 100) {
         pageSize = 100;
     }
     let pageOffset = ((+req.query.page - 1) * +req.query.size);
-    const data = await msHotelFacilityModel.findAll({
+    const data = await msHotelRoomGradeModel.findAll({
         data: [
             'id',
+            'supplierId',
             'hotelId',
-            'hotelFacilityId',            
+            'cxlPolicyId',
+            'hotelSupplierCode',
+            'prepayment',
+            'nonXml',
+            'nonTarif',
             'status'
         ],
         offset: pageOffset,
@@ -63,13 +73,18 @@ const getMsHotelFacilitys = async (req, res, next) => {
 
 }
 
-const getMsHotelFacility = async (req, res) => {
+const getMsHotelRoomGrade = async (req, res) => {
     const id = req.params.id;
-    const data = await msHotelFacilityModel.findOne({
+    const data = await msHotelRoomGradeModel.findOne({
         attributes: [
                 'id',
+                'supplierId',
                 'hotelId',
-                'hotelFacilityId',                
+                'cxlPolicyId',
+                'hotelSupplierCode',
+                'prepayment',
+                'nonXml',
+                'nonTarif',                
                 'status'
             ],
         where: {
@@ -85,7 +100,7 @@ const getMsHotelFacility = async (req, res) => {
 
 }
 
-const editMsHotelFacility = async (req, res) => {
+const editMsHotelRoomGrade = async (req, res) => {
     const id = req.params.id;
     // Extract userId from JWT token
     const userId = req.user.id;
@@ -93,13 +108,18 @@ const editMsHotelFacility = async (req, res) => {
         const currencies = req.body.map(
             response => {
                 return {
+                    supplierId: response.supplierId,
                     hotelId: response.hotelId,
-                    hotelFacilityId: response.hotelFacilityId,
+                    cxlPolicyId: response.cxlPolicyId,
+                    hotelSupplierCode: response.hotelSupplierCode,
+                    prepayment: response.prepayment,
+                    nonXml: response.nonXml,
+                    nonTarif: response.nonTarif,                   
                     status: response.status,
                     updatedBy:userId,
                 }
             });
-        const updatedData = await msHotelFacilityModel.update(currencies, { where: { id: id } });
+        const updatedData = await msHotelRoomGradeModel.update(currencies, { where: { id: id } });
 
         if (updatedData[0] > 0) {
             res.status(200).send({ message: 'Success Updated the data.', data: updatedData });
@@ -111,9 +131,9 @@ const editMsHotelFacility = async (req, res) => {
     }
 }
 
-const deleteMsHotelFacility = async (req, res) => {
+const deleteMsHotelRoomGrade = async (req, res) => {
     const id = req.params.id;
-    const deletedData = await msHotelFacilityModel.destroy({ where: { id: id } });
+    const deletedData = await msHotelRoomGradeModel.destroy({ where: { id: id } });
 
     if (deletedData) {
         res.status(200).send({ message: 'The data deleted successfully.', data: deletedData });
@@ -124,9 +144,9 @@ const deleteMsHotelFacility = async (req, res) => {
 
 
 module.exports = {
-    addMsHotelFacilitys,
-    getMsHotelFacilitys,
-    getMsHotelFacility,
-    editMsHotelFacility,
-    deleteMsHotelFacility
+    addMsHotelRoomGrades,
+    getMsHotelRoomGrades,
+    getMsHotelRoomGrade,
+    editMsHotelRoomGrade,
+    deleteMsHotelRoomGrade
 }
