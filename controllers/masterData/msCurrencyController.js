@@ -13,10 +13,10 @@ const addMsCurrencys = async (req, res) => {
 
     if (req.body && Array.isArray(req.body)) {
         const datas = req.body.map(
-            Currencys => {
+            response => {
                 return {                    
-                    symbol: charges.symbol,
-                    name: charges.name,
+                    symbol: response.symbol,
+                    name: response.name,
                     status: 1,
                     createdBy:userId,
                 }
@@ -86,11 +86,11 @@ const editMsCurrency = async (req, res) => {
     const userId = req.user.id;
     if (req.body && Array.isArray(req.body)) {
         const currencies = req.body.map(
-            currency => {
+            response => {
                 return {
-                    symbol: currency.symbol,
-                    name: currency.name,
-                    status: currency.status,
+                    symbol: response.symbol,
+                    name: response.name,
+                    status: response.status,
                     updatedBy:userId,
                 }
             });

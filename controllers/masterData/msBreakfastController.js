@@ -23,7 +23,7 @@ const addMsBreakfasts = async (req, res) => {
             });
         
         await msBreakfastsModel.bulkCreate(datas).then(data => {
-            res.status(201).send({ data: data, message: 'Ms Breakfast created successfully' });
+            res.status(201).send({ data: data, message: 'Data created successfully' });
         })
             .catch(err => {
                 res.status(500).send({
