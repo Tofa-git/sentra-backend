@@ -3,11 +3,11 @@
 const chalk = require('chalk');
 const { request } = require('express');
 const db = require('../../config/sequelize');
-const msHotelRoomGradeModel = db.hotelRoomGrade;
+const msHotelSupplierModel = db.hotelSupplier;
 const AppError = require('../../utils/appError')
 
 
-const addMsHotelRoomGrades = async (req, res) => {
+const addMsHotelSuppliers = async (req, res) => {
     // Extract userId from JWT token
     const userId = req.user.id;
 
@@ -26,7 +26,7 @@ const addMsHotelRoomGrades = async (req, res) => {
                     createdBy:userId,
                 }
             });
-        await msHotelRoomGradeModel.bulkCreate(datas).then(data => {
+        await msHotelSupplierModel.bulkCreate(datas).then(data => {
             res.status(201).send({ data: data, message: 'Data created successfully' });
         })
             .catch(err => {
@@ -42,14 +42,14 @@ const addMsHotelRoomGrades = async (req, res) => {
     }
 }
 
-const getMsHotelRoomGrades = async (req, res, next) => {
+const getMsHotelSuppliers = async (req, res, next) => {
     if (!req.query.size || !req.query.page) return res.status(500).send({ message: 'page number and page size are required !' })
     let pageSize = +req.query.size;
     if (pageSize > 100) {
         pageSize = 100;
     }
     let pageOffset = ((+req.query.page - 1) * +req.query.size);
-    const data = await msHotelRoomGradeModel.findAll({
+    const data = await msHotelSupplierModel.findAll({
         data: [
             'id',
             'supplierId',
@@ -73,9 +73,9 @@ const getMsHotelRoomGrades = async (req, res, next) => {
 
 }
 
-const getMsHotelRoomGrade = async (req, res) => {
+const getMsHotelSupplier = async (req, res) => {
     const id = req.params.id;
-    const data = await msHotelRoomGradeModel.findOne({
+    const data = await msHotelSupplierModel.findOne({
         attributes: [
                 'id',
                 'supplierId',
@@ -100,7 +100,7 @@ const getMsHotelRoomGrade = async (req, res) => {
 
 }
 
-const editMsHotelRoomGrade = async (req, res) => {
+const editMsHotelSupplier = async (req, res) => {
     const id = req.params.id;
     // Extract userId from JWT token
     const userId = req.user.id;
@@ -119,7 +119,7 @@ const editMsHotelRoomGrade = async (req, res) => {
                     updatedBy:userId,
                 }
             });
-        const updatedData = await msHotelRoomGradeModel.update(currencies, { where: { id: id } });
+        const updatedData = await msHotelSupplierModel.update(currencies, { where: { id: id } });
 
         if (updatedData[0] > 0) {
             res.status(200).send({ message: 'Success Updated the data.', data: updatedData });
@@ -131,9 +131,9 @@ const editMsHotelRoomGrade = async (req, res) => {
     }
 }
 
-const deleteMsHotelRoomGrade = async (req, res) => {
+const deleteMsHotelSupplier = async (req, res) => {
     const id = req.params.id;
-    const deletedData = await msHotelRoomGradeModel.destroy({ where: { id: id } });
+    const deletedData = await msHotelSupplierModel.destroy({ where: { id: id } });
 
     if (deletedData) {
         res.status(200).send({ message: 'The data deleted successfully.', data: deletedData });
@@ -144,9 +144,9 @@ const deleteMsHotelRoomGrade = async (req, res) => {
 
 
 module.exports = {
-    addMsHotelRoomGrades,
-    getMsHotelRoomGrades,
-    getMsHotelRoomGrade,
-    editMsHotelRoomGrade,
-    deleteMsHotelRoomGrade
+    addMsHotelSuppliers,
+    getMsHotelSuppliers,
+    getMsHotelSupplier,
+    editMsHotelSupplier,
+    deleteMsHotelSupplier
 }
