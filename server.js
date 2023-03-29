@@ -28,7 +28,7 @@ app.use(morgan("dev"));
 app.use('/images', express.static(path.normalize(path.join( __dirname, '/images/products'))));  // required to send file
 // console.log(path.join( __dirname, '/images/products'));
 // console.log(__filename);
-const port = process.env.port || 3000;
+const port = process.env.port || 4000;
 
 // app.use((req, res, next) => {
 //     if (req.method === 'GET') {
@@ -77,8 +77,14 @@ app.use('/api', userRouter)
 const productRouter = require('./routes/productRoutes');
 app.use('/api', productRouter)
 
+const syncHotelRouter = require('./routes/integrationRoutes');
+app.use('/api/integration', syncHotelRouter)
+
 const masterDataRouter = require('./routes/masterDataRoutes');
 app.use('/api/master', masterDataRouter)
+
+const masterHotelRouter = require('./routes/masterHotelRoutes');
+app.use('/api/hotel', masterHotelRouter)
 
 const documentationRouter = require('./docs');
 app.use('/api/doc', swaggerUI.serve,swaggerUI.setup(documentationRouter))

@@ -42,6 +42,11 @@ module.exports = (sequelize, DataTypes) => {
         address: {
             type: DataTypes.STRING
         },
+        image: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+            require: false
+        },  
         isEmailVerified: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,

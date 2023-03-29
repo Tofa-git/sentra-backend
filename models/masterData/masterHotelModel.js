@@ -1,7 +1,7 @@
 "use strict"
 
 module.exports = (sequelize, DataTypes) => {
-    let masterHotel= sequelize.define('mas_hotels', {
+    let masterHotel= sequelize.define('ms_hotels', {
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
         },
         locationId: {
             type: DataTypes.INTEGER, 
+            allowNull: false,           
+        },
+        code: {
+            type: DataTypes.STRING(10), 
             allowNull: false,           
         },
         sequence: {

@@ -5,7 +5,7 @@ const { request } = require('express');
 const db = require('../../config/sequelize');
 const msHotelModel = db.masterHotel;
 const AppError = require('../../utils/appError')
-
+var axios = require('axios');
 
 const addMsHotels = async (req, res) => {
     // Extract userId from JWT token
@@ -14,7 +14,7 @@ const addMsHotels = async (req, res) => {
     if (req.body && Array.isArray(req.body)) {
         const datas = req.body.map(
             response => {
-                return {                    
+                return {
                     countryId: response.countryId,
                     cityId: response.cityId,
                     locationId: response.locationId,
@@ -37,24 +37,63 @@ const addMsHotels = async (req, res) => {
                     manager: response.manager,
                     internalRemark: response.internalRemark,
                     status: 1,
-                    createdBy:userId,
+                    createdBy: userId,
                 }
             });
-        await msHotelModel.bulkCreate(datas).then(data => {
-            res.status(201).send({ data: data, message: 'Data created successfully' });
-        })
-            .catch(err => {
-                res.status(500).send({
-                    data: null,
-                    message:
-                        err.message =
-                        "Validation Error" ? err.message : "Some error occurred while creating the data."
+            var config = {
+                method: 'post',
+                url: 'http://uat-jarvis1-xmlsell.mgbedbank.com/1.0/hotel/GetHotelList',
+                data: {
+                    "Login": {
+                        "AgencyCode": "AGID024973",
+                        "Username": "SentraVJ1",
+                        "Password": "5eN74a!h0L!742Y"
+                    },
+                    "Language": "EN",
+                    "Country": "ID",
+                    "City": "ID-DPS",
+                    "Hotels": {
+                        "Code": [
+                            ""
+                        ]
+                    },
+                    "FromDateTime": "2019-05-16 00:00:00",
+                    "DetailLevel": "full",
+                    "Xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                    "Xsd": "http://www.w3.org/2001/XMLSchema"
+                },
+                headers: {
+                    'Accept': 'application/json'
+                }
+            };
+    
+            axios(config)
+                .then(function (response) {
+                    console.log(JSON.stringify(response.data));
+                    res.status(201).send({ data: response.data, message: 'Data created successfully' });
+                })
+                .catch(function (error) {
+                    console.log(error);
                 });
-            });
+    
+
+        // await msHotelModel.bulkCreate(datas).then(data => {
+        //     res.status(201).send({ data: data, message: 'Data created successfully' });
+        // })
+        //     .catch(err => {
+        //         res.status(500).send({
+        //             data: null,
+        //             message:
+        //                 err.message =
+        //                 "Validation Error" ? err.message : "Some error occurred while creating the data."
+        //         });
+        //     });
     } else {
         res.status(500).send({ message: 'Bad Request Check Your Request' });
     }
 }
+
+
 
 const getMsHotels = async (req, res, next) => {
     if (!req.query.size || !req.query.page) return res.status(500).send({ message: 'page number and page size are required !' })
@@ -170,7 +209,7 @@ const editMsHotel = async (req, res) => {
                     manager: response.manager,
                     internalRemark: response.internalRemark,
                     status: 1,
-                    createdBy:userId,
+                    createdBy: userId,
                 }
             });
         const updatedData = await msHotelModel.update(datas, { where: { id: id } });
@@ -186,6 +225,7 @@ const editMsHotel = async (req, res) => {
 
 
 }
+
 
 const deleteMsHotel = async (req, res) => {
     const id = req.params.id;
@@ -203,6 +243,6 @@ module.exports = {
     addMsHotels,
     getMsHotels,
     getMsHotel,
-    editMsHotel,
+    editMsHotel,    
     deleteMsHotel
 }

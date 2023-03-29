@@ -14,7 +14,11 @@ router.post('/signup',
             .withMessage('Password length must be at least 5 chars.'),
     ],
     userController.createUser);
+
 router.post('/login', userController.loginUser);
 
+router.post('/loginAdmin', userController.loginAdmin);
+
+router.post('/verifyUserToken',userController.verifyToken)
 
 module.exports = router;

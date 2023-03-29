@@ -10,34 +10,36 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true
         },
         isoId: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING(3),
+            allowNull: false,
+            require: true,
+            unique: true,
+        },
+        iso3: {
+            type: DataTypes.STRING(3),
             allowNull: false,
             require: true
-        },
-        sequence: {
-            type: DataTypes.INTEGER,
-            require: true
-        },
+        },      
         name: {
             type: DataTypes.STRING(64),
             require: true
         },
+        dial: {
+            type: DataTypes.STRING(5),
+            require: true
+        },
         basicCurrency: {
-            type: DataTypes.BIGINT,
+            type: DataTypes.STRING(3),
             require: true
         },
-        usedCurrency: {
-            type: DataTypes.BIGINT,
+        descCurrency: {
+            type: DataTypes.STRING(64),
             require: true
-        },
-        latitude: {
-            type: DataTypes.FLOAT,
+        },   
+        sequence: {
+            type: DataTypes.INTEGER,
             require: true
-        },
-        longitude: {
-            type: DataTypes.FLOAT,
-            require: true
-        },
+        },     
         status: {
             type: DataTypes.STRING,
             enum: ['0', '1', '2', '3'],

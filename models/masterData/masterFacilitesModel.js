@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             require: true
         },
+        code: {
+            type: DataTypes.STRING,
+            require: true
+        },
         description: {
             type: DataTypes.STRING,
             require: true

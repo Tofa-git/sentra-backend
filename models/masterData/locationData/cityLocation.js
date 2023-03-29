@@ -21,15 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         name: {
             type: DataTypes.STRING(64),
             require: true
-        },
-        latitude: {
-            type: DataTypes.FLOAT,
-            require: true
-        },
-        longitude: {
-            type: DataTypes.FLOAT,
-            require: true
-        },
+        },       
         status: {
             type: DataTypes.STRING,
             enum: ['0', '1', '2', '3'],

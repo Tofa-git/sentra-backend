@@ -7,6 +7,7 @@ const msHotelController = require('../controllers/masterData/msHotelController')
 const msPaymentMethodController = require('../controllers/masterData/msPaymentMethodController');
 const msRoomGradeController = require('../controllers/masterData/msRoomGradeController');
 const msSessionController = require('../controllers/masterData/msSessionController');
+const msFacilityController = require('../controllers/masterData/msFacilitiesController');
 const auth = require('../middlewares/auth');
 
 const router = require('express').Router();
@@ -68,6 +69,14 @@ router.get('/session', auth, msSessionController.getMsSessions);
 router.get('/session/:id', auth, msSessionController.getMsSession);
 router.put('/session/:id', auth, extractFile, msSessionController.editMsSession);
 router.delete('/session/:id', auth, msSessionController.deleteMsSession);
+//#endregion
+
+//#region Facility
+router.post('/facility', auth, extractFile, msFacilityController.addMsFacilities, middleErrMsg);
+router.get('/facility', msFacilityController.getMsFacilities);
+router.get('/facility/:id', auth, msFacilityController.getMsFacility);
+router.put('/facility/:id', auth, extractFile, msFacilityController.editMsFacility);
+router.delete('/facility/:id', auth, msFacilityController.deleteMsFacility);
 //#endregion
 
 module.exports = router;

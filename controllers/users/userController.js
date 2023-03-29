@@ -66,7 +66,7 @@ const loginUser = async (req, res, next) => {
     const { email, password } = req.body;
     if (email) {
         let passwordMatchFlag
-        const user = await userModel.findOne({ attributes: ['id','firstName', 'lastName', 'email', 'mobile', 'password', 'address'], where: { email: email } });
+        const user = await userModel.findOne({ attributes: ['id','firstName', 'lastName', 'email', 'mobile', 'password', 'address','image'], where: { email: email } });
 
         if (user) {
             passwordMatchFlag = generalConfig.comparePassword(password, user.password)
@@ -77,15 +77,55 @@ const loginUser = async (req, res, next) => {
         } else if (passwordMatchFlag) {
             const jwToken = jwt.sign({ email: user.email, id: user.id }, process.env.JWT_SECRET_KEY, { expiresIn: "30m" });
             user.password = undefined;
-            return res.status(200).send({ message: 'Loggedin nsuccessfully !', user, token: jwToken, expirationDuration: 1800 })
+            return res.status(200).send({ message: 'Loggedin nsuccessfully !', data: user, token: jwToken, expirationDuration: 1800 })
         } else {
             return res.status(401).send({ message: 'Please enter coorrect email and password !' });
         }
     }
 }
 
+const loginAdmin = async(req,res)=>{
+      
+    try{
+        let adminData=req.body;
+        let adminEmail="admin@gmail.com";
+        let password="12345";
+        if(adminEmail==adminData.email && password== adminData.password){
+        //    console.log(adminData)
+            res.json({status:"ok",admin:true})
+
+        }else{
+            res.json({status:"not Ok",error:"admin details invalid"})
+        }
+
+    }catch(err){
+         res.json({status:"error",error:"oops catch error"})
+    }
+}
+
+const verifyToken= async (req, res) => {
+    try {
+           
+        const decodedToken = jwt.verify(req.body.Token, 'secret')
+        const user = await userModel.findOne({ attributes: ['id','firstName', 'lastName', 'email', 'mobile', 'password', 'address','image'], where: { email: decodedToken.email }});
+        console.log(user)
+        if (user.image) {
+            user.image = `http://localhost:4000/${user.image}`
+        }
+        else {
+            user.image = `https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png`
+        }
+        console.log(user.image)
+        return res.status(200).json({ message: "token valid", data : user, token: true });
+
+    } catch (err) {
+        res.json({ status: 'error', error: "invalid token", token: false })
+    }
+}
 
 module.exports = {
     createUser,
     loginUser,
+    loginAdmin,
+    verifyToken,
 }
