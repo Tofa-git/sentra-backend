@@ -71,7 +71,7 @@ db.hotelRoomGrade = require('../models/hotel/hotelRoomGrade')(sequelize, DataTyp
 db.hotelSupplier = require('../models/hotel/hotelSupplier')(sequelize, DataTypes);
 
 // Log
-db.logActivity = require('../models/Log/logActivitiesModel')(sequelize, DataTypes);
+db.logActivity = require('../models/log/logActivitiesModel')(sequelize, DataTypes);
 
 // Transaction
 db.exchangeRate  = require('../models/transaction/exchangeRatesModel')(sequelize,DataTypes);
