@@ -65,10 +65,10 @@ db.countryGroup = require('../models/masterData/locationData/countryGroup')(sequ
 //#endregion
 
 // Hotel
-db.hotelExtra = require('../models/Hotel/hotelExtra')(sequelize, DataTypes);
-db.hotelFacility = require('../models/Hotel/hotelFacilities')(sequelize, DataTypes);
-db.hotelRoomGrade = require('../models/Hotel/hotelRoomGrade')(sequelize, DataTypes);
-db.hotelSupplier = require('../models/Hotel/hotelSupplier')(sequelize, DataTypes);
+db.hotelExtra = require('../models/hotel/hotelExtra')(sequelize, DataTypes);
+db.hotelFacility = require('../models/hotel/hotelFacilities')(sequelize, DataTypes);
+db.hotelRoomGrade = require('../models/hotel/hotelRoomGrade')(sequelize, DataTypes);
+db.hotelSupplier = require('../models/hotel/hotelSupplier')(sequelize, DataTypes);
 
 // Log
 db.logActivity = require('../models/Log/logActivitiesModel')(sequelize, DataTypes);
