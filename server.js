@@ -28,7 +28,7 @@ app.use(morgan("dev"));
 app.use('/images', express.static(path.normalize(path.join( __dirname, '/images/products'))));  // required to send file
 // console.log(path.join( __dirname, '/images/products'));
 // console.log(__filename);
-const port = process.env.port || 4000;
+const port = process.env.APP_PORT || 4000;
 
 // app.use((req, res, next) => {
 //     if (req.method === 'GET') {
