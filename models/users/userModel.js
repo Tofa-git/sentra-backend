@@ -1,10 +1,10 @@
 "use strict"
 const secrets = [
-    "password",    
+    "password",
     "status",
     "createdAt",
     "updatedAt",
-  ];
+];
 
 module.exports = (sequelize, DataTypes) => {
     let user = sequelize.define('users', {
@@ -46,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: true,
             require: false
-        },  
+        },
         isEmailVerified: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
@@ -55,6 +55,14 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             enum: ['0', '1', '2', '3'],
             default: '0',
+        },
+        otp: {
+            type: DataTypes.STRING,
+            required: true,
+        },
+        active: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
         },
         createdBy: {
             type: DataTypes.INTEGER,

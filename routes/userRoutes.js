@@ -21,4 +21,10 @@ router.post('/loginAdmin', userController.loginAdmin);
 
 router.post('/verifyUserToken',userController.verifyToken)
 
+// router.post('/verifyUserOtp',userController.verifyToken)
+
+router.get('/users', userController.getUsers);
+
+router.get('/user', userController.getUser);
+
 module.exports = router;

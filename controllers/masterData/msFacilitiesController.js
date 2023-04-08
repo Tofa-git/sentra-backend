@@ -61,7 +61,7 @@ const getMsFacilities = async (req, res, next) => {
     });
 
     if (data.length > 0) {
-        res.status(200).send({ success: true, message: 'Data found.', data: data, totalData: 12 });
+        res.status(200).send({ message: 'Data found.', data: data, totalData: 12 });
     } else {
         res.status(404).send({ message: 'Data not found.', success: false });
     }
