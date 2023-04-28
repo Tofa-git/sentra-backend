@@ -68,25 +68,25 @@ const createUser = async (req, res, next) => {
                     status: 1,
                 }
             });
-        await userModel.bulkCreate(users).then(data => {
-            res.status(201).send({ data: data, message: 'user created successfully' });
-        })
-            .catch(err => {
-                res.status(500).send({
-                    data: null,
-                    message:
-                        err.message =
-                        "Validation Error" ? "The Email is Already Exist" : "Some error occurred while creating the Users."
-                });
-                console.log(err)
-            });
+
 
         try {
             await sendMail({
                 to: users[0].email,
                 OTP: otpGenerated,
             });
-            return [true, newUser];
+            await userModel.bulkCreate(users).then(data => {
+                res.status(201).send({ data: data, message: 'user created successfully' });
+            })
+                .catch(err => {
+                    res.status(500).send({
+                        data: null,
+                        message:
+                            err.message =
+                            "Validation Error" ? "The Email is Already Exist" : "Some error occurred while creating the Users."
+                    });
+                    console.log(err)
+                });
         } catch (error) {
             return [false, 'Unable to sign up, Please try again later', error];
         }

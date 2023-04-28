@@ -28,7 +28,19 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
         mobile: {
-            type: DataTypes.INTEGER
+            type: DataTypes.BIGINT,
+            unique: true,
+            allowNull: false,
+            validate: {
+                not: {
+                    args: ["[a-z]", 'i'],
+                    msg: "Please enter a valid number"
+                },
+                len: {
+                    args: [10, 20],
+                    msg: "Min length of the phone number is 10"
+                },
+            },
         },
         email: {
             type: DataTypes.STRING,
@@ -48,6 +60,10 @@ module.exports = (sequelize, DataTypes) => {
             require: false
         },
         isEmailVerified: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
+        isFirstLogin: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
