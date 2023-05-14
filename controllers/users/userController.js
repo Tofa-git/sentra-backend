@@ -10,6 +10,7 @@ const { sendMail } = require('../../services/emailServices');
 const { generateOTP } = require('../../services/otpServices');
 const generalConfig = require('../../config/generalConfig');
 const { success, error, validation } = require("../../utils/responseApi");
+const { responseSuccess, responseError } = require('../../utils/response');
 
 
 const getUsers = async (req, res, next) => {
@@ -34,20 +35,13 @@ const getUsers = async (req, res, next) => {
 }
 
 const getUser = async (req, res, next) => {
-
+    const id = req.user?.id;
     const data = await userModel.findOne({
         attributes: ['id', 'firstName', 'lastName', 'email', 'mobile', 'address', 'image'],
-        where: {
-            id: id
-        },
+        where: { id },
     });
 
-    if (data.length > 0) {
-        res.status(200).send({ message: 'Data found.', data: data });
-    } else {
-        res.status(404).send({ message: 'Data not found.' });
-    }
-
+    res.status(200).send(responseSuccess('Data found.', data));
 }
 
 const createUser = async (req, res, next) => {
@@ -131,17 +125,17 @@ const loginUser = async (req, res, next) => {
             passwordMatchFlag = generalConfig.comparePassword(password, user.password)
         }
 
-        if (!user) {
-            return res.status(401).send({ message: 'Please enter coorrect email and password !' });
-        } else if (passwordMatchFlag) {
-            const jwToken = jwt.sign({ email: user.email, id: user.id }, process.env.JWT_SECRET_KEY, { expiresIn: "30m" });
+        if (passwordMatchFlag) {
+            const token = jwt.sign({ email: user.email, id: user.id }, process.env.JWT_SECRET_KEY, { expiresIn: "30m" });
             user.password = undefined;
-            return res
-                .status(200)
-                .json(success("Loggedin nsuccessfully !", { user, token: jwToken, expirationDuration: 1800 }, res.statusCode));
-            // return res.status(200).send({ message: 'Loggedin nsuccessfully !', data: user, token: jwToken, expirationDuration: 1800 })
+
+            res.status(200).send(responseSuccess("Loggedin nsuccessfully !", {
+                user,
+                token,
+                expirationDuration: 1800,
+            }));
         } else {
-            return res.status(401).send({ message: 'Please enter coorrect email and password !' });
+            res.status(401).send(responseError('Please enter coorrect email and password !'));
         }
     }
 }
