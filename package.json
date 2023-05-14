@@ -31,5 +31,8 @@
     "start": "nodemon server.js"
   },
   "author": "Agung Wicaksono Surasno",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "sequelize-cli": "^6.6.0"
+  }
 }
