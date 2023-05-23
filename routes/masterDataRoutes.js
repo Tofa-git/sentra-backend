@@ -1,5 +1,7 @@
 "use strict"
 
+const msCountryCodeController = require('../controllers/masterLocationData/msCountryCodeController');
+const msCityCodeController = require('../controllers/masterLocationData/msCityCodeController');
 const msBreakfastController = require('../controllers/masterData/msBreakfastController');
 const msChargeController = require('../controllers/masterData/msChargeController');
 const msCurrencyController = require('../controllers/masterData/msCurrencyController');
@@ -13,7 +15,22 @@ const auth = require('../middlewares/auth');
 const router = require('express').Router();
 const extractFile = require('../middlewares/check-img-mime-type');
 const middleErrMsg = require('../config/errorMsg');
-const { masterChargeTypes } = require('../config/sequelize');
+
+//#region City Code
+router.post('/country-code', auth, msCountryCodeController.create);
+router.get('/country-code', auth, msCountryCodeController.list);
+router.get('/country-code/:id', auth, msCountryCodeController.detail);
+router.put('/country-code/:id', auth, msCountryCodeController.update);
+router.delete('/country-code/:id', auth, msCountryCodeController.destroy);
+//#endregion
+
+//#region City Code
+router.post('/city-code', auth, msCityCodeController.create);
+router.get('/city-code', auth, msCityCodeController.list);
+router.get('/city-code/:id', auth, msCityCodeController.detail);
+router.put('/city-code/:id', auth, msCityCodeController.update);
+router.delete('/city-code/:id', auth, msCityCodeController.destroy);
+//#endregion
 
 //#region Breakfast
 router.post('/breakfast', auth, extractFile, msBreakfastController.addMsBreakfasts, middleErrMsg);
