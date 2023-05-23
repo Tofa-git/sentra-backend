@@ -132,7 +132,7 @@ const loginUser = async (req, res, next) => {
             res.status(200).send(responseSuccess("Loggedin nsuccessfully !", {
                 user,
                 token,
-                expirationDuration: 1800,
+                expirationDuration: 18000,
             }));
         } else {
             res.status(401).send(responseError('Please enter coorrect email and password !'));
