@@ -1,17 +1,13 @@
 "use strict"
 
 module.exports = (sequelize, DataTypes) => {
-    let masterFacility = sequelize.define('ms_facilities', {
+    const masterFacility = sequelize.define('ms_facilities', {
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,
             unique: true,
             primaryKey: true,
             autoIncrement: true
-        },
-        sequence: {
-            type: DataTypes.INTEGER,
-            require: true
         },
         code: {
             type: DataTypes.STRING,
@@ -21,14 +17,17 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             require: true
         },
-        status: {
+        category: {
             type: DataTypes.STRING,
-            enum: ['0', '1', '2', '3'],
-            default: '0',
+            enum: ['hotel', 'room'],
+        },
+        used: {
+            type: DataTypes.BOOLEAN,
+            default: 0,
         },
         createdBy: {
-            type: DataTypes.INTEGER, 
-            allowNull: false,           
+            type: DataTypes.INTEGER,
+            allowNull: false,
         },
         updatedBy: {
             type: DataTypes.INTEGER,

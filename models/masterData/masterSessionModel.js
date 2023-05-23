@@ -13,14 +13,13 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             require: true
         },
-        status: {
+        code: {
             type: DataTypes.STRING,
-            enum: ['0', '1', '2', '3'],
-            default: '0',
+            require: true,
         },
         createdBy: {
-            type: DataTypes.INTEGER, 
-            allowNull: false,           
+            type: DataTypes.INTEGER,
+            allowNull: false,
         },
         updatedBy: {
             type: DataTypes.INTEGER,

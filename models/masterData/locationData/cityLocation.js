@@ -21,15 +21,21 @@ module.exports = (sequelize, DataTypes) => {
         name: {
             type: DataTypes.STRING(64),
             require: true
-        },       
+        },
+        latitude: {
+            type: DataTypes.FLOAT,
+        },
+        longitude: {
+            type: DataTypes.FLOAT,
+        },
         status: {
             type: DataTypes.STRING,
             enum: ['0', '1', '2', '3'],
             default: '0',
         },
         createdBy: {
-            type: DataTypes.INTEGER, 
-            allowNull: false,           
+            type: DataTypes.INTEGER,
+            allowNull: false,
         },
         updatedBy: {
             type: DataTypes.INTEGER,
