@@ -8,6 +8,10 @@ module.exports = {
   },
 
   responseError(message, data = null) {
+    if (Array.isArray(message.errors) && message.errors.length > 0) {
+      message = message.errors[0].message;
+    }
+
     return {
       success: false,
       message: message,
