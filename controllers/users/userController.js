@@ -13,35 +13,32 @@ const { success, error, validation } = require("../../utils/responseApi");
 const { responseSuccess, responseError } = require('../../utils/response');
 
 
-const getUsers = async (req, res, next) => {
-    if (!req.query.size || !req.query.page) return res.status(500).send({ message: 'page number and page size are required !' })
-    let pageSize = +req.query.size;
-    if (pageSize > 100) {
-        pageSize = 100;
-    }
-    let pageOffset = ((+req.query.page - 1) * +req.query.size);
-    const data = await userModel.findAll({
-        attributes: ['id', 'firstName', 'lastName', 'email', 'mobile', 'address', 'image'],
-        offset: pageOffset,
-        limit: pageSize,
-    });
+const getUsers = async (req, res) => {
+    try {
+        const data = await userModel.findAll({
+            attributes: ['id', 'firstName', 'lastName', 'email', 'mobile', 'address', 'image'],
+            offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
+            limit: req.query.limit ? +req.query.limit : 10,
+        });
 
-    if (data.length > 0) {
-        res.status(200).send({ message: 'Data found.', data: data });
-    } else {
-        res.status(404).send({ message: 'Data not found.' });
+        res.status(200).send(responseSuccess('Data found.', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
     }
-
 }
 
 const getUser = async (req, res, next) => {
-    const id = req.user?.id;
-    const data = await userModel.findOne({
-        attributes: ['id', 'firstName', 'lastName', 'email', 'mobile', 'address', 'image'],
-        where: { id },
-    });
+    try {
+        const id = req.user?.id;
+        const data = await userModel.findOne({
+            attributes: ['id', 'firstName', 'lastName', 'email', 'mobile', 'address', 'image'],
+            where: { id },
+        });
 
-    res.status(200).send(responseSuccess('Data found.', data));
+        res.status(200).send(responseSuccess('Data found.', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
 }
 
 const createUser = async (req, res, next) => {
