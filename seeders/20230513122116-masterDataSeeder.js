@@ -4,6 +4,7 @@ const db = require('../config/sequelize');
 
 const cityLocationModel = db.cityLocation
 const countryGroupModel = db.countryGroup
+const nationalityModel = db.nationality
 const msFacilitiesModel = db.masterFacility
 const breakfastsModel = db.masterBreakfasts
 const roomGradesModel = db.masterRoomGrade
@@ -14,16 +15,15 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     let cityLocations = [];
     let countryGroups = [];
+    let nationalities = [];
     let facilities = [];
     let breakfasts = [];
 
     for (let i = 1; i <= 1000; i++) {
       cityLocations.push({
         cityId: i,
-        sequence: i,
+        code: i,
         name: `location ${i}`,
-        latitude: 100.00,
-        longitude: 2.00,
         status: 1,
         createdBy: 1,
       });
@@ -37,17 +37,24 @@ module.exports = {
         createdBy: 1,
       });
 
+      nationalities.push({
+        code: i,
+        name: `nationality ${i}`,
+        rank: i,
+        status: 1,
+        createdBy: 1,
+      });
+
       facilities.push({
-        description: `desc ${i}`,
+        name: `name ${i}`,
         code: i,
         category: i % 2 === 0 ? 'hotel' : 'room',
-        used: 0,
+        status: '1',
         createdBy: 1,
-        used: 0,
       });
 
       breakfasts.push({
-        description: `desc ${i}`,
+        name: `desc ${i}`,
         code: i,
         createdBy: 1,
       });
@@ -55,6 +62,7 @@ module.exports = {
 
     await cityLocationModel.bulkCreate(cityLocations);
     await countryGroupModel.bulkCreate(countryGroups);
+    await nationalityModel.bulkCreate(nationalities);
     await msFacilitiesModel.bulkCreate(facilities);
     await breakfastsModel.bulkCreate(breakfasts);
     await roomGradesModel.bulkCreate(breakfasts);

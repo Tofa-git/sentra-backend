@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             require: true
         },
-        description: {
+        name: {
             type: DataTypes.STRING,
             require: true
         },
@@ -21,9 +21,8 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             enum: ['hotel', 'room'],
         },
-        used: {
-            type: DataTypes.BOOLEAN,
-            default: 0,
+        status: {
+            type: DataTypes.STRING,
         },
         createdBy: {
             type: DataTypes.INTEGER,

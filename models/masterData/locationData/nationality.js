@@ -1,7 +1,7 @@
 "use strict"
 
 module.exports = (sequelize, DataTypes) => {
-    let cityLocation = sequelize.define('city_location', {
+    const model = sequelize.define('nationality', {
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -9,15 +9,14 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true
         },
-        cityId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
         name: {
             type: DataTypes.STRING(64),
         },
         code: {
             type: DataTypes.STRING,
+        },
+        rank: {
+            type: DataTypes.INTEGER,
         },
         status: {
             type: DataTypes.STRING,
@@ -28,12 +27,10 @@ module.exports = (sequelize, DataTypes) => {
         },
         updatedBy: {
             type: DataTypes.INTEGER,
-            allowNull: true,
         },
     }, {
         freezeTableName: true
     })
 
-    return cityLocation;
-
+    return model;
 }

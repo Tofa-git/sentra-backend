@@ -2,6 +2,8 @@
 
 const msCountryCodeController = require('../controllers/masterLocationData/msCountryCodeController');
 const msCityCodeController = require('../controllers/masterLocationData/msCityCodeController');
+const nationalityController = require('../controllers/masterLocationData/nationalityController');
+const cityLocationController = require('../controllers/masterLocationData/msCityLocationController');
 const msBreakfastController = require('../controllers/masterData/msBreakfastController');
 const msChargeController = require('../controllers/masterData/msChargeController');
 const msCurrencyController = require('../controllers/masterData/msCurrencyController');
@@ -32,12 +34,28 @@ router.put('/city-code/:id', auth, msCityCodeController.update);
 router.delete('/city-code/:id', auth, msCityCodeController.destroy);
 //#endregion
 
+//#region Nationality
+router.post('/nationality', auth, nationalityController.create);
+router.get('/nationality', auth, nationalityController.list);
+router.get('/nationality/:id', auth, nationalityController.detail);
+router.put('/nationality/:id', auth, nationalityController.update);
+router.delete('/nationality/:id', auth, nationalityController.destroy);
+//#endregion
+
+//#region City Location
+router.post('/city-location', auth, cityLocationController.create);
+router.get('/city-location', auth, cityLocationController.list);
+router.get('/city-location/:id', auth, cityLocationController.detail);
+router.put('/city-location/:id', auth, cityLocationController.update);
+router.delete('/city-location/:id', auth, cityLocationController.destroy);
+//#endregion
+
 //#region Breakfast
-router.post('/breakfast', auth, extractFile, msBreakfastController.addMsBreakfasts, middleErrMsg);
-router.get('/breakfast', auth, msBreakfastController.getMsBreakfasts);
-router.get('/breakfast/:id', auth, msBreakfastController.getMsBreakfast);
-router.put('/breakfast/:id', auth, extractFile, msBreakfastController.editMsBreakfast);
-router.delete('/breakfast/:id', auth, msBreakfastController.deleteMsBreakfast);
+router.post('/breakfast', auth, msBreakfastController.create);
+router.get('/breakfast', auth, msBreakfastController.list);
+router.get('/breakfast/:id', auth, msBreakfastController.detail);
+router.put('/breakfast/:id', auth, msBreakfastController.update);
+router.delete('/breakfast/:id', auth, msBreakfastController.destroy);
 //#endregion
 
 //#region Charge
@@ -89,11 +107,11 @@ router.delete('/session/:id', auth, msSessionController.deleteMsSession);
 //#endregion
 
 //#region Facility
-router.post('/facility', auth, extractFile, msFacilityController.addMsFacilities, middleErrMsg);
-router.get('/facility', msFacilityController.getMsFacilities);
-router.get('/facility/:id', auth, msFacilityController.getMsFacility);
-router.put('/facility/:id', auth, extractFile, msFacilityController.editMsFacility);
-router.delete('/facility/:id', auth, msFacilityController.deleteMsFacility);
+router.post('/facility', auth, msFacilityController.create);
+router.get('/facility', auth, msFacilityController.list);
+router.get('/facility/:id', auth, msFacilityController.detail);
+router.put('/facility/:id', auth, msFacilityController.update);
+router.delete('/facility/:id', auth, msFacilityController.destroy);
 //#endregion
 
 module.exports = router;

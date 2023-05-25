@@ -57,6 +57,7 @@ db.masterRoomGrade = require('../models/masterData/masterRoomGradeModel')(sequel
 db.masterSession  = require('../models/masterData/masterSessionModel')(sequelize,DataTypes);
 
 //#region Master Data Location
+db.nationality = require('../models/masterData/locationData/nationality')(sequelize,DataTypes);
 db.cityCode = require('../models/masterData/locationData/cityCode')(sequelize,DataTypes);
 db.cityLocation = require('../models/masterData/locationData/cityLocation')(sequelize,DataTypes);
 db.countryCode = require('../models/masterData/locationData/countryCode')(sequelize,DataTypes);

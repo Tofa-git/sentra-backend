@@ -2,13 +2,15 @@
 
 const db = require('../../config/sequelize');
 const { responseSuccess, responseError } = require('../../utils/response');
-const breakfastModel = db.masterBreakfasts;
+const nationalityModel = db.nationality;
 
 const create = async (req, res) => {
     try {
-        await breakfastModel.create({
+        await nationalityModel.create({
+            rank: req.body.rank,
             name: req.body.name,
             code: req.body.code,
+            status: req.body.status,
             createdBy: req.user.id,
         })
 
@@ -20,11 +22,13 @@ const create = async (req, res) => {
 
 const list = async (req, res) => {
     try {
-        const data = await breakfastModel.findAll({
+        const data = await nationalityModel.findAll({
             attributes: [
                 'id',
+                'rank',
                 'name',
                 'code',
+                'status'
             ],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
@@ -38,11 +42,13 @@ const list = async (req, res) => {
 
 const detail = async (req, res) => {
     try {
-        const data = await breakfastModel.findOne({
+        const data = await nationalityModel.findOne({
             attributes: [
                 'id',
+                'rank',
                 'name',
                 'code',
+                'status'
             ],
             where: {
                 id: req.params.id,
@@ -57,9 +63,11 @@ const detail = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        await breakfastModel.update({
+        await nationalityModel.update({
+            rank: req.body.rank,
             name: req.body.name,
             code: req.body.code,
+            status: req.body.status,
             updatedBy: req.user.id,
         }, { where: { id: req.params.id } })
 
@@ -71,7 +79,7 @@ const update = async (req, res) => {
 
 const destroy = async (req, res) => {
     try {
-        await breakfastModel.destroy({ where: { id: req.params.id } });
+        await nationalityModel.destroy({ where: { id: req.params.id } });
 
         res.status(201).send(responseSuccess('Data deleted successfully'));
     } catch (error) {
