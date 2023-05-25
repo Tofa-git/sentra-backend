@@ -9,6 +9,7 @@ const msFacilitiesModel = db.masterFacility
 const breakfastsModel = db.masterBreakfasts
 const roomGradesModel = db.masterRoomGrade
 const sessionsModel = db.masterSession
+const paymentMethodModel = db.masterPaymentMethod
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -67,6 +68,7 @@ module.exports = {
     await breakfastsModel.bulkCreate(breakfasts);
     await roomGradesModel.bulkCreate(breakfasts);
     await sessionsModel.bulkCreate(breakfasts);
+    await paymentMethodModel.bulkCreate(breakfasts);
 
     return true;
   },

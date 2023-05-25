@@ -83,19 +83,20 @@ router.delete('/hotel/:id', auth, msHotelController.deleteMsHotel);
 //#endregion
 
 //#region Payment Method
-router.post('/payment-method', auth, extractFile, msPaymentMethodController.addMsPayments, middleErrMsg);
-router.get('/payment-method', auth, msPaymentMethodController.getMsPayments);
-router.get('/payment-method/:id', auth, msPaymentMethodController.getMsPayment);
-router.put('/payment-method/:id', auth, extractFile, msPaymentMethodController.editMsPayment);
-router.delete('/payment-method/:id', auth, msPaymentMethodController.deleteMsPayment);
+router.post('/payment-method', auth, msPaymentMethodController.create);
+router.get('/payment-method', auth, msPaymentMethodController.list);
+router.get('/payment-method/:id', auth, msPaymentMethodController.detail);
+router.put('/payment-method/:id', auth, msPaymentMethodController.update);
+router.delete('/payment-method/:id', auth, msPaymentMethodController.destroy);
 //#endregion
 
 //#region Room Grade
-router.post('/room-grade', auth, extractFile, msRoomGradeController.addMsRoomGrades, middleErrMsg);
-router.get('/room-grade', auth, msRoomGradeController.getMsRoomGrades);
-router.get('/room-grade/:id', auth, msRoomGradeController.getMsRoomGrade);
-router.put('/room-grade/:id', auth, extractFile, msRoomGradeController.editMsRoomGrade);
-router.delete('/room-grade/:id', auth, msRoomGradeController.deleteMsRoomGrade);
+router.post('/room-grade', auth, msRoomGradeController.create);
+router.get('/room-grade', auth, msRoomGradeController.list);
+router.get('/room-grade/:id', auth, msRoomGradeController.detail);
+router.put('/room-grade/:id', auth, msRoomGradeController.update);
+router.delete('/room-grade/:id', auth, msRoomGradeController.destroy);
+//#endregion
 //#endregion
 
 //#region Session

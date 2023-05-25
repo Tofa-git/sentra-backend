@@ -1,7 +1,7 @@
 "use strict"
 
 module.exports = (sequelize, DataTypes) => {
-    let masterPaymentMethod = sequelize.define('ms_payment_methods', {
+    const masterBreakfast = sequelize.define('ms_payment_methods', {
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -9,18 +9,15 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true
         },
-        description: {
+        name: {
             type: DataTypes.STRING,
-            require: true
         },
-        status: {
+        code: {
             type: DataTypes.STRING,
-            enum: ['0', '1', '2', '3'],
-            default: '0',
         },
         createdBy: {
-            type: DataTypes.INTEGER, 
-            allowNull: false,           
+            type: DataTypes.INTEGER,
+            allowNull: false,
         },
         updatedBy: {
             type: DataTypes.INTEGER,
@@ -30,6 +27,6 @@ module.exports = (sequelize, DataTypes) => {
         freezeTableName: true
     })
 
-    return masterPaymentMethod;
+    return masterBreakfast;
 
 }
