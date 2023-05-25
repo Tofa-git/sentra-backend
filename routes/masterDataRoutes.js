@@ -63,7 +63,7 @@ router.post('/chargetype', auth, extractFile, msChargeController.addMsCharges, m
 router.get('/chargetype', auth, msChargeController.getMsCharges);
 router.get('/chargetype/:id', auth, msChargeController.getMsCharge);
 router.put('/chargetype/:id', auth, extractFile, msChargeController.editMsCharge);
-router.delete('/chargetype/:id', auth, msChargeController.deleteMsCharge  );
+router.delete('/chargetype/:id', auth, msChargeController.deleteMsCharge);
 //#endregion
 
 //#region Currency
@@ -71,7 +71,7 @@ router.post('/currency', auth, extractFile, msCurrencyController.addMsCurrencys,
 router.get('/currency', auth, msCurrencyController.getMsCurrencys);
 router.get('/currency/:id', auth, msCurrencyController.getMsCurrency);
 router.put('/currency/:id', auth, extractFile, msCurrencyController.editMsCurrency);
-router.delete('/currency/:id', auth, msCurrencyController.deleteMsCurrency  );
+router.delete('/currency/:id', auth, msCurrencyController.deleteMsCurrency);
 //#endregion
 
 //#region Hotel
