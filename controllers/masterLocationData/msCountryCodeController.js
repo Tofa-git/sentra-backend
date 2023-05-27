@@ -121,6 +121,20 @@ const destroy = async (req, res) => {
     }
 }
 
+const listDropdown = async (req, res) => {
+    try {
+        const data = await msCountryCodeModel.findAll({
+            attributes: [
+                'id',
+                'name',
+            ],
+        });
+
+        res.status(200).send(responseSuccess('Success', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
 
 module.exports = {
     create,
@@ -128,4 +142,5 @@ module.exports = {
     detail,
     update,
     destroy,
+    listDropdown,
 }
