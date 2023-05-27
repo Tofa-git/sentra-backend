@@ -1,7 +1,9 @@
 "use strict"
 
+const { Op } = require('sequelize');
 const db = require('../../config/sequelize');
 const { responseSuccess, responseError } = require('../../utils/response');
+const { paginattionGenerator } = require('../../utils/pagination');
 const msCityCodeModel = db.cityCode;
 
 const create = async (req, res) => {
@@ -27,7 +29,7 @@ const create = async (req, res) => {
 
 const list = async (req, res) => {
     try {
-        const data = await msCityCodeModel.findAll({
+        const query = await msCityCodeModel.findAndCountAll({
             attributes: [
                 'id',
                 'countryId',
@@ -38,7 +40,18 @@ const list = async (req, res) => {
             ],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
+            where: {
+                [Op.and]: [
+                    {
+                        long_name: {
+                            [Op.like]: ['%' + (req.query.long_name ?? '') + '%'],
+                        },
+                    },
+                ]
+            }
         });
+
+        const data = paginattionGenerator(req, query);
 
         res.status(200).send(responseSuccess('Success', data));
     } catch (error) {

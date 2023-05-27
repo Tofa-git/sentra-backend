@@ -1,7 +1,9 @@
 "use strict"
 
+const { Op } = require('sequelize');
 const db = require('../../config/sequelize');
 const { responseSuccess, responseError } = require('../../utils/response');
+const { paginattionGenerator } = require('../../utils/pagination');
 const cxlPolicyModel = db.cxlPolicy;
 
 const create = async (req, res) => {
@@ -36,7 +38,7 @@ const create = async (req, res) => {
 
 const list = async (req, res) => {
     try {
-        const data = await cxlPolicyModel.findAll({
+        const query = await cxlPolicyModel.findAndCountAll({
             attributes: [
                 'id',
                 'name',
@@ -60,7 +62,18 @@ const list = async (req, res) => {
             ],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
+            where: {
+                [Op.and]: [
+                    {
+                        name: {
+                            [Op.like]: ['%' + (req.query.name ?? '') + '%'],
+                        },
+                    },
+                ]
+            }
         });
+
+        const data = paginattionGenerator(req, query);
 
         res.status(200).send(responseSuccess('Success', data));
     } catch (error) {

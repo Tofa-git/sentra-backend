@@ -1,6 +1,8 @@
 "use strict"
 
+const { Op } = require('sequelize');
 const db = require('../../config/sequelize');
+const { paginattionGenerator } = require('../../utils/pagination');
 const msCountryCodeModel = db.countryCode;
 const { responseError, responseSuccess } = require('../../utils/response');
 
@@ -26,19 +28,37 @@ const create = async (req, res) => {
 
 const list = async (req, res) => {
     try {
-        const data = await msCountryCodeModel.findAll({
+        const query = await msCountryCodeModel.findAndCountAll({
             attributes: [
                 'id',
                 'isoId',
+                'iso3',
                 'sequence',
                 'name',
+                'dial',
                 'basicCurrency',
                 'descCurrency',
                 'status',
             ],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
+            where: {
+                [Op.and]: [
+                    {
+                        name: {
+                            [Op.like]: ['%' + (req.query.name ?? '') + '%'],
+                        },
+                    },
+                    {
+                        isoId: {
+                            [Op.like]: ['%' + (req.query.isoId ?? '') + '%'],
+                        },
+                    },
+                ]
+            }
         });
+
+        const data = paginattionGenerator(req, query);
 
         res.status(200).send(responseSuccess('Success', data));
     } catch (error) {
@@ -52,11 +72,13 @@ const detail = async (req, res) => {
             attributes: [
                 'id',
                 'isoId',
+                'iso3',
                 'sequence',
                 'name',
+                'dial',
                 'basicCurrency',
                 'descCurrency',
-                'status'
+                'status',
             ],
             where: {
                 id: req.params.id,
