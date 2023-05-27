@@ -1,128 +1,153 @@
 "use strict"
 
-const chalk = require('chalk');
-const { request } = require('express');
 const db = require('../../config/sequelize');
-const msCxlPolicyModel = db.cxlPolicy;
-const AppError = require('../../utils/appError')
+const { responseSuccess, responseError } = require('../../utils/response');
+const cxlPolicyModel = db.cxlPolicy;
 
-
-const addMsCxlPolicys = async (req, res) => {
-    // Extract userId from JWT token
-    const userId = req.user.id;
-
-    if (req.body && Array.isArray(req.body)) {
-        const datas = req.body.map(
-            response => {
-                return {                                        
-                    description: response.description,
-                    status: 1,
-                    createdBy:userId,
-                }
-            });
-        await msCxlPolicyModel.bulkCreate(datas).then(data => {
-            res.status(201).send({ data: data, message: 'Data created successfully' });
+const create = async (req, res) => {
+    try {
+        await cxlPolicyModel.create({
+            name: req.body.name,
+            code: req.body.code,
+            day_1: req.body.day_1,
+            time_1: req.body.time_1,
+            type_1: req.body.type_1,
+            tnight_1: req.body.tnight_1,
+            day_2: req.body.day_2,
+            time_2: req.body.time_2,
+            type_2: req.body.type_2,
+            tnight_2: req.body.tnight_2,
+            day_3: req.body.day_3,
+            time_3: req.body.time_3,
+            type_3: req.body.type_3,
+            tnight_3: req.body.tnight_3,
+            day_4: req.body.day_4,
+            time_4: req.body.time_4,
+            type_4: req.body.type_4,
+            tnight_4: req.body.tnight_4,
+            createdBy: req.user.id,
         })
-            .catch(err => {
-                res.status(500).send({
-                    data: null,
-                    message:
-                        err.message =
-                        "Validation Error" ? err.message : "Some error occurred while creating the data."
-                });
-            });
-    } else {
-        res.status(500).send({ message: 'Bad Request Check Your Request' });
+
+        res.status(201).send(responseSuccess('Data created successfully'));
+    } catch (error) {
+        res.status(500).send(responseError(error));
     }
 }
 
-const getMsCxlPolicys = async (req, res, next) => {
-    if (!req.query.size || !req.query.page) return res.status(500).send({ message: 'page number and page size are required !' })
-    let pageSize = +req.query.size;
-    if (pageSize > 100) {
-        pageSize = 100;
-    }
-    let pageOffset = ((+req.query.page - 1) * +req.query.size);
-    const data = await msCxlPolicyModel.findAll({
-        data: [
-            'id',            
-            'description',
-            'status'
-        ],
-        offset: pageOffset,
-        limit: pageSize,
-    });
-
-    if (data.length > 0) {
-        res.status(200).send({ message: 'Success.', data: data });
-    } else {
-        res.status(404).send({ message: 'The data is not found.' });
-    }
-
-}
-
-const getMsCxlPolicy = async (req, res) => {
-    const id = req.params.id;
-    const data = await msCxlPolicyModel.findOne({
-        attributes: [
-                'id',                
-                'description',
-                'status'
+const list = async (req, res) => {
+    try {
+        const data = await cxlPolicyModel.findAll({
+            attributes: [
+                'id',
+                'name',
+                'day_1',
+                'time_1',
+                'type_1',
+                'night_1',
+                'day_2',
+                'time_2',
+                'type_2',
+                'night_2',
+                'day_3',
+                'time_3',
+                'type_3',
+                'night_3',
+                'day_4',
+                'time_4',
+                'type_4',
+                'night_4',
+                'code',
             ],
-        where: {
-            id: id
-        }
-    });
+            offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
+            limit: req.query.limit ? +req.query.limit : 10,
+        });
 
-    if (data) {
-        res.status(200).send({ message: 'Success.', data: data });
-    } else {
-        res.status(404).send({ message: 'The data is not found' });
-    }
-
-}
-
-const editMsCxlPolicy = async (req, res) => {
-    const id = req.params.id;
-    // Extract userId from JWT token
-    const userId = req.user.id;
-    if (req.body && Array.isArray(req.body)) {
-        const currencies = req.body.map(
-            response => {
-                return {                    
-                    description: response.description,
-                    status: response.status,
-                    updatedBy:userId,
-                }
-            });
-        const updatedData = await msCxlPolicyModel.update(currencies, { where: { id: id } });
-
-        if (updatedData[0] > 0) {
-            res.status(200).send({ message: 'Success Updated the data.', data: updatedData });
-        } else {
-            res.status(404).send({ message: 'Could not update the data.' });
-        }
-    } else {
-        res.status(500).send({ message: 'Bad Request Check Your Request' });
+        res.status(200).send(responseSuccess('Success', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
     }
 }
 
-const deleteMsCxlPolicy = async (req, res) => {
-    const id = req.params.id;
-    const deletedData = await msCxlPolicyModel.destroy({ where: { id: id } });
+const detail = async (req, res) => {
+    try {
+        const data = await cxlPolicyModel.findOne({
+            attributes: [
+                'id',
+                'name',
+                'day_1',
+                'time_1',
+                'type_1',
+                'night_1',
+                'day_2',
+                'time_2',
+                'type_2',
+                'night_2',
+                'day_3',
+                'time_3',
+                'type_3',
+                'night_3',
+                'day_4',
+                'time_4',
+                'type_4',
+                'night_4',
+                'code',
+            ],
+            where: {
+                id: req.params.id,
+            }
+        });
 
-    if (deletedData) {
-        res.status(200).send({ message: 'The data deleted successfully.', data: deletedData });
-    } else {
-        res.status(404).send({ message: 'The data not deleted.' });
+        res.status(200).send(responseSuccess('Success', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
+
+const update = async (req, res) => {
+    try {
+        await cxlPolicyModel.update({
+            name: req.body.name,
+            code: req.body.code,
+            day_1: req.body.day_1,
+            time_1: req.body.time_1,
+            type_1: req.body.type_1,
+            tnight_1: req.body.tnight_1,
+            day_2: req.body.day_2,
+            time_2: req.body.time_2,
+            type_2: req.body.type_2,
+            tnight_2: req.body.tnight_2,
+            day_3: req.body.day_3,
+            time_3: req.body.time_3,
+            type_3: req.body.type_3,
+            tnight_3: req.body.tnight_3,
+            day_4: req.body.day_4,
+            time_4: req.body.time_4,
+            type_4: req.body.type_4,
+            tnight_4: req.body.tnight_4,
+            updatedBy: req.user.id,
+        }, { where: { id: req.params.id } })
+
+        res.status(201).send(responseSuccess('Data updated successfully'));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
+
+const destroy = async (req, res) => {
+    try {
+        await cxlPolicyModel.destroy({ where: { id: req.params.id } });
+
+        res.status(201).send(responseSuccess('Data deleted successfully'));
+    } catch (error) {
+        res.status(500).send(responseError(error))
     }
 }
 
 
 module.exports = {
-    addMsCxlPolicys,
-    getMsCxlPolicys,
-    getMsCxlPolicy,
-    editMsCxlPolicy,
-    deleteMsCxlPolicy
+    create,
+    list,
+    detail,
+    update,
+    destroy,
 }

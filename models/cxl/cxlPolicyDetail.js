@@ -14,11 +14,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             require: true
         },
-        description: {
-            type: DataTypes.STRING,
-            require: true
-        },
-        cutOffDay: {
+        day: {
             type: DataTypes.INTEGER,
             require: true
         },
@@ -26,22 +22,17 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TIME,
             require: true
         },
-        chargeType: {
+        type: {
             type: DataTypes.INTEGER,
             require: true
         },
-        value: {
+        night: {
             type: DataTypes.DOUBLE,
             require: true
         },
-        status: {
-            type: DataTypes.STRING,
-            enum: ['0', '1', '2', '3'],
-            default: '0',
-        },
         createdBy: {
-            type: DataTypes.INTEGER, 
-            allowNull: false,           
+            type: DataTypes.INTEGER,
+            allowNull: false,
         },
         updatedBy: {
             type: DataTypes.INTEGER,

@@ -1,7 +1,7 @@
 "use strict"
 
 module.exports = (sequelize, DataTypes) => {
-    let cxlPolicy = sequelize.define('cxl_policies', {
+    const masterBreakfast = sequelize.define('cxl_policies', {
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -9,18 +9,63 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true
         },
-        description: {
+        name: {
             type: DataTypes.STRING,
-            require: true
         },
-        status: {
+        code: {
             type: DataTypes.STRING,
-            enum: ['0', '1', '2', '3'],
-            default: '0',
+        },
+        day_1: {
+            type: DataTypes.INTEGER,
+        },
+        time_1: {
+            type: DataTypes.TIME,
+        },
+        type_1: {
+            type: DataTypes.STRING,
+        },
+        night_1: {
+            type: DataTypes.INTEGER,
+        },
+        day_2: {
+            type: DataTypes.INTEGER,
+        },
+        time_2: {
+            type: DataTypes.TIME,
+        },
+        type_2: {
+            type: DataTypes.STRING,
+        },
+        night_2: {
+            type: DataTypes.INTEGER,
+        },
+        day_3: {
+            type: DataTypes.INTEGER,
+        },
+        time_3: {
+            type: DataTypes.TIME,
+        },
+        type_3: {
+            type: DataTypes.STRING,
+        },
+        night_3: {
+            type: DataTypes.INTEGER,
+        },
+        day_4: {
+            type: DataTypes.INTEGER,
+        },
+        time_4: {
+            type: DataTypes.TIME,
+        },
+        type_4: {
+            type: DataTypes.STRING,
+        },
+        night_4: {
+            type: DataTypes.INTEGER,
         },
         createdBy: {
-            type: DataTypes.INTEGER, 
-            allowNull: false,           
+            type: DataTypes.INTEGER,
+            allowNull: false,
         },
         updatedBy: {
             type: DataTypes.INTEGER,
@@ -30,6 +75,6 @@ module.exports = (sequelize, DataTypes) => {
         freezeTableName: true
     })
 
-    return cxlPolicy;
+    return masterBreakfast;
 
 }

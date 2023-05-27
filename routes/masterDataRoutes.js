@@ -12,6 +12,8 @@ const msPaymentMethodController = require('../controllers/masterData/msPaymentMe
 const msRoomGradeController = require('../controllers/masterData/msRoomGradeController');
 const msSessionController = require('../controllers/masterData/msSessionController');
 const msFacilityController = require('../controllers/masterData/msFacilitiesController');
+const policyController = require('../controllers/cxl/policyController');
+const policyDetailController = require('../controllers/cxl/policyDetailController');
 const auth = require('../middlewares/auth');
 
 const router = require('express').Router();
@@ -97,14 +99,29 @@ router.get('/room-grade/:id', auth, msRoomGradeController.detail);
 router.put('/room-grade/:id', auth, msRoomGradeController.update);
 router.delete('/room-grade/:id', auth, msRoomGradeController.destroy);
 //#endregion
+
+//#region Cxl Policy
+router.post('/cxl-policy', auth, policyController.create);
+router.get('/cxl-policy', auth, policyController.list);
+router.get('/cxl-policy/:id', auth, policyController.detail);
+router.put('/cxl-policy/:id', auth, policyController.update);
+router.delete('/cxl-policy/:id', auth, policyController.destroy);
+//#endregion
+
+//#region Cxl Policy Detail
+router.post('/cxl-policy-detail', auth, policyDetailController.create);
+router.get('/cxl-policy-detail', auth, policyDetailController.list);
+router.get('/cxl-policy-detail/:id', auth, policyDetailController.detail);
+router.put('/cxl-policy-detail/:id', auth, policyDetailController.update);
+router.delete('/cxl-policy-detail/:id', auth, policyDetailController.destroy);
 //#endregion
 
 //#region Session
-router.post('/session', auth, extractFile, msSessionController.addMsSessions, middleErrMsg);
-router.get('/session', auth, msSessionController.getMsSessions);
-router.get('/session/:id', auth, msSessionController.getMsSession);
-router.put('/session/:id', auth, extractFile, msSessionController.editMsSession);
-router.delete('/session/:id', auth, msSessionController.deleteMsSession);
+router.post('/session', auth, msSessionController.create);
+router.get('/session', auth, msSessionController.list);
+router.get('/session/:id', auth, msSessionController.detail);
+router.put('/session/:id', auth, msSessionController.update);
+router.delete('/session/:id', auth, msSessionController.destroy);
 //#endregion
 
 //#region Facility
