@@ -44,7 +44,7 @@ const list = async (req, res) => {
                 [Op.and]: [
                     {
                         long_name: {
-                            [Op.like]: ['%' + (req.query.long_name ?? '') + '%'],
+                            [Op.like]: ['%' + (req.query.longName ?? '') + '%'],
                         },
                     },
                 ]
