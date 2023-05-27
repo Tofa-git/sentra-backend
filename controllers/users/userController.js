@@ -123,16 +123,16 @@ const loginUser = async (req, res, next) => {
         }
 
         if (passwordMatchFlag) {
-            const token = jwt.sign({ email: user.email, id: user.id }, process.env.JWT_SECRET_KEY, { expiresIn: "30m" });
+            const token = jwt.sign({ email: user.email, id: user.id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
             user.password = undefined;
 
-            res.status(200).send(responseSuccess("Loggedin nsuccessfully !", {
+            res.status(200).send(responseSuccess("Loggedin nsuccessfully!", {
                 user,
                 token,
                 expirationDuration: 18000,
             }));
         } else {
-            res.status(401).send(responseError('Please enter coorrect email and password !'));
+            res.status(401).send(responseError('Please enter correct email and password!'));
         }
     }
 }
