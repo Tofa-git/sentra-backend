@@ -55,6 +55,7 @@ db.masterHotel = require('../models/masterData/masterHotelModel')(sequelize, Dat
 db.masterPaymentMethod = require('../models/masterData/masterPaymentMethodModel')(sequelize, DataTypes);
 db.masterRoomGrade = require('../models/masterData/masterRoomGradeModel')(sequelize,DataTypes);
 db.masterSession  = require('../models/masterData/masterSessionModel')(sequelize,DataTypes);
+db.holiday = require('../models/masterData/holidayModel')(sequelize,DataTypes);
 
 //#region Master Data Location
 db.nationality = require('../models/masterData/locationData/nationality')(sequelize,DataTypes);

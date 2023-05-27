@@ -12,6 +12,7 @@ const msPaymentMethodController = require('../controllers/masterData/msPaymentMe
 const msRoomGradeController = require('../controllers/masterData/msRoomGradeController');
 const msSessionController = require('../controllers/masterData/msSessionController');
 const msFacilityController = require('../controllers/masterData/msFacilitiesController');
+const holidaysController = require('../controllers/masterData/holidaysController');
 const policyController = require('../controllers/cxl/policyController');
 const policyDetailController = require('../controllers/cxl/policyDetailController');
 const auth = require('../middlewares/auth');
@@ -26,6 +27,7 @@ router.get('/country-code', auth, msCountryCodeController.list);
 router.get('/country-code/:id', auth, msCountryCodeController.detail);
 router.put('/country-code/:id', auth, msCountryCodeController.update);
 router.delete('/country-code/:id', auth, msCountryCodeController.destroy);
+router.get('/country-code-dd/', auth, msCountryCodeController.listDropdown);
 //#endregion
 
 //#region City Code
@@ -34,6 +36,7 @@ router.get('/city-code', auth, msCityCodeController.list);
 router.get('/city-code/:id', auth, msCityCodeController.detail);
 router.put('/city-code/:id', auth, msCityCodeController.update);
 router.delete('/city-code/:id', auth, msCityCodeController.destroy);
+router.get('/city-code-dd/', auth, msCityCodeController.listDropdown);
 //#endregion
 
 //#region Nationality
@@ -42,6 +45,7 @@ router.get('/nationality', auth, nationalityController.list);
 router.get('/nationality/:id', auth, nationalityController.detail);
 router.put('/nationality/:id', auth, nationalityController.update);
 router.delete('/nationality/:id', auth, nationalityController.destroy);
+router.get('/nationality-dd/', auth, nationalityController.listDropdown);
 //#endregion
 
 //#region City Location
@@ -50,6 +54,7 @@ router.get('/city-location', auth, cityLocationController.list);
 router.get('/city-location/:id', auth, cityLocationController.detail);
 router.put('/city-location/:id', auth, cityLocationController.update);
 router.delete('/city-location/:id', auth, cityLocationController.destroy);
+router.get('/city-location-dd/', auth, cityLocationController.listDropdown);
 //#endregion
 
 //#region Breakfast
@@ -58,6 +63,7 @@ router.get('/breakfast', auth, msBreakfastController.list);
 router.get('/breakfast/:id', auth, msBreakfastController.detail);
 router.put('/breakfast/:id', auth, msBreakfastController.update);
 router.delete('/breakfast/:id', auth, msBreakfastController.destroy);
+router.get('/breakfast-dd/', auth, msBreakfastController.listDropdown);
 //#endregion
 
 //#region Charge
@@ -90,6 +96,7 @@ router.get('/payment-method', auth, msPaymentMethodController.list);
 router.get('/payment-method/:id', auth, msPaymentMethodController.detail);
 router.put('/payment-method/:id', auth, msPaymentMethodController.update);
 router.delete('/payment-method/:id', auth, msPaymentMethodController.destroy);
+router.get('/payment-method-dd/', auth, msPaymentMethodController.listDropdown);
 //#endregion
 
 //#region Room Grade
@@ -98,6 +105,7 @@ router.get('/room-grade', auth, msRoomGradeController.list);
 router.get('/room-grade/:id', auth, msRoomGradeController.detail);
 router.put('/room-grade/:id', auth, msRoomGradeController.update);
 router.delete('/room-grade/:id', auth, msRoomGradeController.destroy);
+router.get('/room-grade-dd/', auth, msRoomGradeController.listDropdown);
 //#endregion
 
 //#region Cxl Policy
@@ -106,6 +114,7 @@ router.get('/cxl-policy', auth, policyController.list);
 router.get('/cxl-policy/:id', auth, policyController.detail);
 router.put('/cxl-policy/:id', auth, policyController.update);
 router.delete('/cxl-policy/:id', auth, policyController.destroy);
+router.get('/cxl-policy-dd/', auth, policyController.listDropdown);
 //#endregion
 
 //#region Cxl Policy Detail
@@ -122,6 +131,7 @@ router.get('/session', auth, msSessionController.list);
 router.get('/session/:id', auth, msSessionController.detail);
 router.put('/session/:id', auth, msSessionController.update);
 router.delete('/session/:id', auth, msSessionController.destroy);
+router.get('/session-dd/', auth, msSessionController.listDropdown);
 //#endregion
 
 //#region Facility
@@ -130,6 +140,12 @@ router.get('/facility', auth, msFacilityController.list);
 router.get('/facility/:id', auth, msFacilityController.detail);
 router.put('/facility/:id', auth, msFacilityController.update);
 router.delete('/facility/:id', auth, msFacilityController.destroy);
+router.get('/facility-dd/', auth, msFacilityController.listDropdown);
+//#endregion
+
+//#region Facility
+router.get('/holiday', auth, holidaysController.list);
+router.put('/holiday', auth, holidaysController.update);
 //#endregion
 
 module.exports = router;
