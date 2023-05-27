@@ -34,8 +34,8 @@ const list = async (req, res) => {
                 'id',
                 'countryId',
                 'sequence',
-                'short_name',
-                'long_name',
+                ['short_name', 'shortName'],
+                ['long_name', 'longName'],
                 'status'
             ],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
@@ -66,8 +66,8 @@ const detail = async (req, res) => {
                 'id',
                 'countryId',
                 'sequence',
-                'short_name',
-                'long_name',
+                ['short_name', 'shortName'],
+                ['long_name', 'longName'],
                 'status'
             ],
             where: {
@@ -117,8 +117,8 @@ const listDropdown = async (req, res) => {
         const data = await msCityCodeModel.findAll({
             attributes: [
                 'id',
-                'short_name',
-                'long_name',
+                ['short_name', 'shortName'],
+                ['long_name', 'longName'],
             ],
         });
 
