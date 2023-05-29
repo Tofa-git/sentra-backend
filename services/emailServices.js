@@ -31,6 +31,24 @@ module.exports.sendMail = async (params) => {
     `,
     };
 
+    const mailDataWithAttachment = {
+      from: 'youremail@gmail.com',
+      to: to,
+      subject: subject,
+      text: text,
+      html: '<b>Hey there! </b><br> This is our first message sent with Nodemailer<br/>',
+      attachments: [
+          {   // file on disk as an attachment
+              filename: 'nodemailer.png',
+              path: 'nodemailer.png'
+          },
+          {   // file on disk as an attachment
+              filename: 'text_file.txt',
+              path: 'text_file.txt'
+          }
+      ]
+  };
+
     let info =  transporter.sendMail(mailData, (error, info) => {
       if (error) {
           return console.log(error);

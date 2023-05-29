@@ -70,6 +70,7 @@ const addMsHotels = async (req, res) => {
             axios(config)
                 .then(function (response) {
                     console.log(JSON.stringify(response.data));
+                    
                     res.status(201).send({ data: response.data, message: 'Data created successfully' });
                 })
                 .catch(function (error) {
