@@ -15,5 +15,6 @@ router.post('/recheck', auth, extractFile, integrationHotelController.recheckHot
 router.post('/booking', auth, extractFile, integrationHotelController.bookingHotels, middleErrMsg);
 
 router.post('/list-hotel', auth, extractFile, integrationMasterController.listHotels, middleErrMsg);
+router.post('/sync-hotel', auth, integrationMasterController.syncHotel);
 
 module.exports = router;

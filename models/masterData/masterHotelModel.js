@@ -1,7 +1,7 @@
 "use strict"
 
 module.exports = (sequelize, DataTypes) => {
-    let masterHotel= sequelize.define('ms_hotels', {
+    let masterHotel = sequelize.define('ms_hotels', {
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -9,107 +9,72 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true
         },
-        countryId: {
-            type: DataTypes.INTEGER, 
-            allowNull: false,           
+        countryCode: {
+            type: DataTypes.STRING,
+            allowNull: false,
         },
-        cityId: {
-            type: DataTypes.INTEGER, 
-            allowNull: false,           
+        cityCode: {
+            type: DataTypes.STRING,
+            allowNull: false,
         },
-        locationId: {
-            type: DataTypes.INTEGER, 
-            allowNull: false,           
+        locationCode: {
+            type: DataTypes.STRING,
+            allowNull: false,
         },
         code: {
-            type: DataTypes.STRING(10), 
-            allowNull: false,           
-        },
-        sequence: {
-            type: DataTypes.INTEGER,
-            require: true
+            type: DataTypes.STRING(10),
+            allowNull: false,
         },
         name: {
             type: DataTypes.STRING(64),
-            require: true
+        },
+        checkInTime: {
+            type: DataTypes.STRING,
+        },
+        checkOutTime: {
+            type: DataTypes.STRING,
         },
         email: {
             type: DataTypes.STRING(64),
-            require: true
-        },
-        bqEmail: {
-            type: DataTypes.STRING(64),
-            require: false,
-            allowNull: true,
-        },
-        ccEmail: {
-            type: DataTypes.STRING(64),
-            require: false,
-            allowNull: true,
         },
         phone: {
             type: DataTypes.STRING(32),
-            require: true
-        },
-        fax: {
-            type: DataTypes.STRING(32),
-            require: false,
-            allowNull: true,
         },
         website: {
             type: DataTypes.STRING(128),
-            require: false,
             allowNull: true,
         },
         youtube: {
             type: DataTypes.STRING(128),
-            require: false,
             allowNull: true,
         },
         address: {
             type: DataTypes.TEXT,
-            require: true
         },
         zipCode: {
             type: DataTypes.STRING(8),
-            require: true
         },
         latitude: {
             type: DataTypes.FLOAT,
-            require: true
         },
         longitude: {
             type: DataTypes.FLOAT,
-            require: true
         },
-        starType: {
-            type: DataTypes.BIGINT,
-            require: true
+        star: {
+            type: DataTypes.STRING,
         },
         totalRoom: {
             type: DataTypes.INTEGER,
-            require: true
-        },
-        event: {
-            type: DataTypes.TEXT,
-            require: true
-        },
-        manager: {
-            type: DataTypes.STRING(64),
-            require: true
         },
         internalRemark: {
             type: DataTypes.TEXT,
-            require: true
         },
         status: {
             type: DataTypes.STRING,
-            enum: ['0', '1', '2', '3'],
-            default: '0',
         },
         createdBy: {
-            type: DataTypes.INTEGER, 
-            allowNull: false,           
+            type: DataTypes.INTEGER,
+            allowNull: false,
         },
         updatedBy: {
             type: DataTypes.INTEGER,

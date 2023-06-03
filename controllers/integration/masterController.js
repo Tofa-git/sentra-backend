@@ -8,6 +8,79 @@ const AppError = require('../../utils/appError')
 const crypto = require('crypto');
 
 var axios = require('axios');
+const { responseError, responseSuccess } = require('../../utils/response');
+
+const syncHotel = async (req, res) => {
+    try {
+        const config = {
+            method: 'post',
+            url: `${process.env.JARVIS_URL}Hotel/GetHotelList`,
+            data: {
+                "Login": {
+                    "AgencyCode": process.env.JARVIS_AGENCY_CODE,
+                    "Username": process.env.JARVIS_USER,
+                    "Password": process.env.JARVIS_PASS,
+                },
+                "Language": req.body.language,
+                "Country": req.body.country,
+                "City": req.body.city,
+                "Hotels": {
+                    "Code": [
+                        req.body.codeHotel
+                    ]
+                },
+                "FromDateTime": req.body.fromDate,
+                "DetailLevel": req.body.detailLevel,
+                "Xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                "Xsd": "http://www.w3.org/2001/XMLSchema"
+            },
+            headers: {
+                'Accept': 'application/json'
+            }
+        };
+
+        axios(config)
+            .then(data => {
+                data?.data?.hotels?.hotel.forEach(async v => {
+                    const currentHotel = await msHotelModel.findOne({ where: { code: v.code } })
+
+                    const insertOrUpdate = {
+                        countryCode: v.address?.countryCode,
+                        cityCode: v.address?.cityCode,
+                        locationCode: v.address?.continentCode,
+                        name: v.name,
+                        email: v.reservation?.email,
+                        phone: v.reservation?.telephone,
+                        website: v.webSite,
+                        address: v.address?.line1,
+                        zipCode: v.address?.zipCode,
+                        latitude: v.geoLocation?.latitude,
+                        longitude: v.geoLocation?.longitude,
+                        checkInTime: v.checkInTime,
+                        checkOutTime: v.checkOutTime,
+                        star: v.rating,
+                        totalRoom: v.noOfRooms,
+                        status: 1,
+                        createdBy: req.user.id,
+                    }
+
+                    if (currentHotel) {
+                        await msHotelModel.update(insertOrUpdate, { where: { code: v.code } })
+                    } else {
+                        await msHotelModel.create({ ...insertOrUpdate, code: v.code })
+                    }
+                })
+
+                res.status(200).send(responseSuccess('Integration successfully', data?.data?.hotels?.hotel))
+            })
+            .catch(error => {
+                throw error
+            });
+
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
 
 const listHotels = async (req, res) => {
     // Extract userId from JWT token
@@ -148,6 +221,7 @@ const nationalities = async (req, res) => {
 
 
 module.exports = {
-    listHotels,  
+    listHotels,
     nationalities,
+    syncHotel,
 }

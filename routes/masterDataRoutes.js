@@ -84,11 +84,12 @@ router.delete('/currency/:id', auth, msCurrencyController.deleteMsCurrency);
 //#endregion
 
 //#region Hotel
-router.post('/hotel', auth, extractFile, msHotelController.addMsHotels, middleErrMsg);
-router.get('/hotel', auth, msHotelController.getMsHotels);
-router.get('/hotel/:id', auth, msHotelController.getMsHotel);
-router.put('/hotel/:id', auth, extractFile, msHotelController.editMsHotel);
-router.delete('/hotel/:id', auth, msHotelController.deleteMsHotel);
+router.post('/hotel', auth, msHotelController.create);
+router.get('/hotel', auth, msHotelController.list);
+router.get('/hotel/:id', auth, msHotelController.detail);
+router.put('/hotel/:id', auth, msHotelController.update);
+router.delete('/hotel/:id', auth, msHotelController.destroy);
+router.get('/hotel-dd/', auth, msHotelController.listDropdown);
 //#endregion
 
 //#region Payment Method
