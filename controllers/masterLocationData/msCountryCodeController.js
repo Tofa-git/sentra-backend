@@ -136,6 +136,21 @@ const listDropdown = async (req, res) => {
     }
 }
 
+const currencies = async (req, res) => {
+    try {
+        const data = await msCountryCodeModel.findAll({
+            attributes: [
+                'basicCurrency',
+            ],
+            group: 'basicCurrency'
+        });
+
+        res.status(200).send(responseSuccess('Success', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
+
 module.exports = {
     create,
     list,
@@ -143,4 +158,5 @@ module.exports = {
     update,
     destroy,
     listDropdown,
+    currencies,
 }

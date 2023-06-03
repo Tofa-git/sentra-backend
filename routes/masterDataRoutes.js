@@ -28,6 +28,7 @@ router.get('/country-code/:id', auth, msCountryCodeController.detail);
 router.put('/country-code/:id', auth, msCountryCodeController.update);
 router.delete('/country-code/:id', auth, msCountryCodeController.destroy);
 router.get('/country-code-dd/', auth, msCountryCodeController.listDropdown);
+router.get('/currencies', auth, msCountryCodeController.currencies);
 //#endregion
 
 //#region City Code
