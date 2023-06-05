@@ -23,7 +23,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(morgan("dev"));
-
+app.use(express.static(__dirname + '/public'));
 
 app.use('/images', express.static(path.normalize(path.join( __dirname, '/images/products'))));  // required to send file
 // console.log(path.join( __dirname, '/images/products'));

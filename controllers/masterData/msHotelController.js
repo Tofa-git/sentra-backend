@@ -5,10 +5,11 @@ const db = require('../../config/sequelize');
 const { responseSuccess, responseError } = require('../../utils/response');
 const { paginattionGenerator } = require('../../utils/pagination');
 const hotelModel = db.masterHotel;
+const hotelPhotoModel = db.hotelPhoto;
 
 const create = async (req, res) => {
     try {
-        await hotelModel.create({
+        const hotel = await hotelModel.create({
             countryCode: req.body.countryCode,
             cityCode: req.body.cityCode,
             locationCode: req.body.locationCode,
@@ -23,13 +24,16 @@ const create = async (req, res) => {
             longitude: req.body.longitude,
             checkInTime: req.body.checkInTime,
             checkOutTime: req.body.checkOutTime,
+            extra: req.body.extra,
             star: req.body.star,
             totalRoom: req.body.totalRoom,
             status: req.body.status,
             createdBy: req.user.id,
         })
 
-        res.status(201).send(responseSuccess('Data created successfully'));
+        await uploadFiles(req, hotel.id);
+
+        res.status(201).send(responseSuccess('Data created successfully', hotel));
     } catch (error) {
         res.status(500).send(responseError(error));
     }
@@ -53,6 +57,7 @@ const list = async (req, res) => {
                 'longitude',
                 'checkInTime',
                 'checkOutTime',
+                'extra',
                 'star',
                 'totalRoom',
                 'status',
@@ -86,7 +91,7 @@ const list = async (req, res) => {
 
 const detail = async (req, res) => {
     try {
-        const data = await hotelModel.findOne({
+        const hotel = await hotelModel.findOne({
             attributes: [
                 'countryCode',
                 'cityCode',
@@ -102,6 +107,7 @@ const detail = async (req, res) => {
                 'longitude',
                 'checkInTime',
                 'checkOutTime',
+                'extra',
                 'star',
                 'totalRoom',
                 'status',
@@ -109,8 +115,20 @@ const detail = async (req, res) => {
             ],
             where: {
                 id: req.params.id,
-            }
+            },
         });
+
+        const [photos] = await db.sequelize.query(`
+            SELECT p.id, p.isMain, f.url
+            FROM hotel_photos p
+            INNER JOIN ms_files f ON f.id = p.fileId
+            WHERE p.hotelId = '${req.params.id}'
+        `);
+
+        const data = {
+            ...hotel?.dataValues,
+            photos,
+        }
 
         res.status(200).send(responseSuccess('Success', data));
     } catch (error) {
@@ -135,11 +153,15 @@ const update = async (req, res) => {
             longitude: req.body.longitude,
             checkInTime: req.body.checkInTime,
             checkOutTime: req.body.checkOutTime,
+            extra: req.body.extra,
             star: req.body.star,
             totalRoom: req.body.totalRoom,
             status: req.body.status,
             updatedBy: req.user.id,
         }, { where: { id: req.params.id } })
+
+        await hotelPhotoModel.destroy({ where: { hotelId: req.params.id } });
+        await uploadFiles(req, req.params.id);
 
         res.status(201).send(responseSuccess('Data updated successfully'));
     } catch (error) {
@@ -150,6 +172,7 @@ const update = async (req, res) => {
 const destroy = async (req, res) => {
     try {
         await hotelModel.destroy({ where: { id: req.params.id } });
+        await hotelPhotoModel.destroy({ where: { hotelId: req.params.id } });
 
         res.status(201).send(responseSuccess('Data deleted successfully'));
     } catch (error) {
@@ -170,6 +193,20 @@ const listDropdown = async (req, res) => {
     } catch (error) {
         res.status(500).send(responseError(error))
     }
+}
+
+const uploadFiles = async (req, hotelId) => {
+    let files = [];
+    req.body.fileIds.map(v => {
+        files.push({
+            hotelId,
+            fileId: v.id,
+            isMain: v.isMain,
+            createdBy: req.user.id,
+        })
+    })
+
+    hotelPhotoModel.bulkCreate(files);
 }
 
 module.exports = {

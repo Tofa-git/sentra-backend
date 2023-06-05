@@ -34,6 +34,9 @@ module.exports = (sequelize, DataTypes) => {
         checkOutTime: {
             type: DataTypes.STRING,
         },
+        extra: {
+            type: DataTypes.TEXT,
+        },
         email: {
             type: DataTypes.STRING(64),
         },

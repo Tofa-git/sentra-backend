@@ -13,6 +13,7 @@ const msRoomGradeController = require('../controllers/masterData/msRoomGradeCont
 const msSessionController = require('../controllers/masterData/msSessionController');
 const msFacilityController = require('../controllers/masterData/msFacilitiesController');
 const holidaysController = require('../controllers/masterData/holidaysController');
+const fileController = require('../controllers/masterData/fileController');
 const policyController = require('../controllers/cxl/policyController');
 const policyDetailController = require('../controllers/cxl/policyDetailController');
 const auth = require('../middlewares/auth');
@@ -90,6 +91,11 @@ router.get('/hotel/:id', auth, msHotelController.detail);
 router.put('/hotel/:id', auth, msHotelController.update);
 router.delete('/hotel/:id', auth, msHotelController.destroy);
 router.get('/hotel-dd/', auth, msHotelController.listDropdown);
+//#endregion
+
+//#region file
+router.post('/file', auth, fileController.create);
+router.delete('/file/:id', auth, fileController.destroy);
 //#endregion
 
 //#region Payment Method
