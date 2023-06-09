@@ -23,6 +23,7 @@ module.exports = {
     let facilities = [];
     let breakfasts = [];
     let holidays = [];
+    let day = 7;
 
     for (let i = 1; i <= 1500; i++) {
       cityLocations.push({
@@ -66,8 +67,11 @@ module.exports = {
 
       holidays.push({
         date: moment(date).add((i - 1), 'days'),
-        isHoliday: false,
+        isHoliday: day === 6 || day === 7 ? true : false,
       })
+
+      day += 1;
+      if (day === 8) day = 1;
     }
 
     // await cityLocationModel.bulkCreate(cityLocations);
