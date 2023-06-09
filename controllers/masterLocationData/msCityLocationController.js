@@ -111,6 +111,7 @@ const listDropdown = async (req, res) => {
             attributes: [
                 'id',
                 'name',
+                'code',
             ],
         });
 

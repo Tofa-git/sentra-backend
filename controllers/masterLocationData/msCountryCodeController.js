@@ -126,6 +126,7 @@ const listDropdown = async (req, res) => {
         const data = await msCountryCodeModel.findAll({
             attributes: [
                 'id',
+                ['isoId', 'code'],
                 'name',
             ],
         });
@@ -141,8 +142,12 @@ const currencies = async (req, res) => {
         const data = await msCountryCodeModel.findAll({
             attributes: [
                 'basicCurrency',
+                'descCurrency',
             ],
-            group: 'basicCurrency'
+            group: [
+                'basicCurrency',
+                'descCurrency',
+            ]
         });
 
         res.status(200).send(responseSuccess('Success', data));
