@@ -120,9 +120,11 @@ const listDropdown = async (req, res) => {
             attributes: [
                 'id',
                 'code',
+                'countryId',
                 ['short_name', 'shortName'],
                 ['long_name', 'longName'],
             ],
+            where: { countryId: req.query.countryId },
         });
 
         res.status(200).send(responseSuccess('Success', data));

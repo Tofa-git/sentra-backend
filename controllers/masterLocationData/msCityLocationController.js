@@ -112,7 +112,9 @@ const listDropdown = async (req, res) => {
                 'id',
                 'name',
                 'code',
+                'cityId',
             ],
+            where: { cityId: req.query.cityId },
         });
 
         res.status(200).send(responseSuccess('Success', data));
