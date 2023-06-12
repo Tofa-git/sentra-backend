@@ -10,7 +10,7 @@ const extractFile = require('../middlewares/check-img-mime-type');
 const middleErrMsg = require('../config/errorMsg');
 const { masterChargeTypes } = require('../config/sequelize');
 
-router.post('/search', auth, extractFile, integrationHotelController.searchHotels, middleErrMsg);
+router.post('/search-hotel', auth, integrationHotelController.searchHotels);
 router.post('/recheck', auth, extractFile, integrationHotelController.recheckHotels, middleErrMsg);
 router.post('/booking', auth, extractFile, integrationHotelController.bookingHotels, middleErrMsg);
 

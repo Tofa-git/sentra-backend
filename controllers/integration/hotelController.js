@@ -9,53 +9,35 @@ const AppError = require('../../utils/appError')
 const crypto = require('crypto');
 
 var axios = require('axios');
+const { responseSuccess, responseError } = require('../../utils/response');
 
 const searchHotels = async (req, res) => {
-    // Extract userId from JWT token
-    const userId = req.user.id;
-
-    if (req.body && Array.isArray(req.body)) {
-        const datas = req.body.map(
-            response => {
-                return {
-                    checkOut: response.checkOut,
-                    checkIn: response.checkIn,
-                    nationality: response.nationality,
-                    country: response.country,
-                    city: response.city,
-                    roomNo: response.roomNo,
-                    codeHotel: response.codeHotel,
-                    adults: response.adults,
-                    children: response.children,
-                    child1Age: response.child1Age,
-                    child2Age: response.child2Age
-                }
-            });
-        var config = {
+    try {
+        const config = {
             method: 'post',
-            url: 'http://uat-jarvis1-xmlsell.mgbedbank.com/1.0/Hotel/SearchHotel',
+            url: `${process.env.JARVIS_URL}Hotel/SearchHotel`,
             data: {
                 "Login": {
-                    "AgencyCode": "AGID024973",
-                    "Username": "SentraVJ1",
-                    "Password": "5eN74a!h0L!742Y"
+                    "AgencyCode": process.env.JARVIS_AGENCY_CODE,
+                    "Username": process.env.JARVIS_USER,
+                    "Password": process.env.JARVIS_PASS,
                 },
-                "Nationality": datas[0].nationality,
-                "Country": datas[0].country,
-                "City": datas[0].city,
+                "Nationality": req.body.nationality,
+                "Country": req.body.country,
+                "City": req.body.city,
                 "Hotels": {
                     "Code": [
-                        datas[0].codeHotel,
+                        req.body.codeHotel,
                     ]
                 },
-                "CheckIn": datas[0].checkIn,
-                "CheckOut": datas[0].checkOut,
+                "CheckIn": req.body.checkIn,
+                "CheckOut": req.body.checkOut,
                 "Rooms": {
                     "Room": [
                         {
-                            "RoomNo": datas[0].roomNo,
-                            "NoOfAdults": datas[0].adults,
-                            "NoOfChild": datas[0].children,
+                            "RoomNo": req.body.roomNo,
+                            "NoOfAdults": req.body.adults,
+                            "NoOfChild": req.body.children,
                             "Child1Age": "",
                             "Child2Age": "",
                             "ExtraBed": false
@@ -74,17 +56,20 @@ const searchHotels = async (req, res) => {
         };
 
         axios(config)
-            .then(function (response) {
-                // console.log(JSON.stringify(response.data));
-                res.status(201).send({ data: response.data, message: 'Integration successfully' });
+            .then(data => {
+                console.log(data)
+                if (data.data.status) {
+                    res.status(200).send(responseSuccess('Integration successfully',  data?.data?.hotels?.hotel))
+                } else {
+                    res.status(data.status).send(responseError(data.data.errorMessage))
+                }
             })
-            .catch(function (error) {
-                console.log(error);
+            .catch(error => {
+                throw error
             });
 
-
-    } else {
-        res.status(500).send({ message: 'Bad Request Check Your Request' });
+    } catch (error) {
+        res.status(500).send(responseError(error))
     }
 }
 
