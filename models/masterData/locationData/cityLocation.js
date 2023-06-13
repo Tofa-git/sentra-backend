@@ -22,6 +22,12 @@ module.exports = (sequelize, DataTypes) => {
         status: {
             type: DataTypes.STRING,
         },
+        latitude: {
+            type: DataTypes.FLOAT,            
+        },
+        longitude: {
+            type: DataTypes.FLOAT,            
+        },
         createdBy: {
             type: DataTypes.INTEGER,
             allowNull: false,
