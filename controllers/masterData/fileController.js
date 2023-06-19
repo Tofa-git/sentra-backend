@@ -1,6 +1,7 @@
 "use strict"
 
 const fs = require('fs');
+const path = require('path');
 const db = require('../../config/sequelize');
 const { responseSuccess, responseError } = require('../../utils/response');
 const fileModel = db.file;
@@ -8,9 +9,25 @@ const fileModel = db.file;
 const create = async (req, res) => {
     try {
         let creates = [];
+
+        if (!Array.isArray(req.body.image)) {
+            // Handle the case when req.body.image is not an array
+            return res.status(400).send(responseError('Invalid image data'));
+        }
+
         req.body.image.map(v => {
             // to declare some path to store your converted image
             const url = '/images/hotel/' + Date.now() + '.png'
+
+            // Get the directory path
+            const directory = path.dirname('./public' + url);
+
+            // Create the directory if it doesn't exist
+            if (!fs.existsSync(directory)) {
+                console.log(directory)
+                fs.mkdirSync(directory, { recursive: true });
+            }
+
 
             // to convert base64 format into random filename
             const base64Data = v.replace(/^data:([A-Za-z-+/]+);base64,/, '');

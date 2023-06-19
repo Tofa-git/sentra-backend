@@ -12,7 +12,7 @@ var axios = require('axios');
 const { responseSuccess, responseError } = require('../../utils/response');
 
 const searchHotels = async (req, res) => {
-    try {
+    try {        
         const config = {
             method: 'post',
             url: `${process.env.JARVIS_URL}Hotel/SearchHotel`,
@@ -58,6 +58,7 @@ const searchHotels = async (req, res) => {
         axios(config)
             .then(data => {
                 console.log(data)
+                
                 if (data.data.status) {
                     res.status(200).send(responseSuccess('Integration successfully',  data?.data?.hotels?.hotel))
                 } else {
