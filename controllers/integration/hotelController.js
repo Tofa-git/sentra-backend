@@ -38,8 +38,8 @@ const searchHotels = async (req, res) => {
                             "RoomNo": req.body.roomNo,
                             "NoOfAdults": req.body.adults,
                             "NoOfChild": req.body.children,
-                            "Child1Age": "",
-                            "Child2Age": "",
+                            "Child1Age": req.body.child1Age,
+                            "Child2Age": req.body.child2Age,
                             "ExtraBed": false
                         }
                     ]
