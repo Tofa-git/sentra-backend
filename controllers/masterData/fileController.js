@@ -1,7 +1,6 @@
 "use strict"
 
 const fs = require('fs');
-const path = require('path');
 const db = require('../../config/sequelize');
 const { responseSuccess, responseError } = require('../../utils/response');
 const fileModel = db.file;
