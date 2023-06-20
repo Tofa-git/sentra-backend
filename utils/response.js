@@ -7,9 +7,15 @@ module.exports = {
     };
   },
 
-  responseError(message, data = null) {
-    if (Array.isArray(message.errors) && message.errors.length > 0) {
-      message = message.errors[0].message;
+  responseError(error, data = null) {
+    console.log(error);
+
+    if (Array.isArray(error.errors) && error.errors.length > 0) {
+      message = error.errors[0].message;
+    } else if (error.message != null) {
+      message = error.message;
+    } else {
+      message = error;
     }
 
     return {
