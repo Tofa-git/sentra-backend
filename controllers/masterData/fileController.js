@@ -11,6 +11,7 @@ const create = async (req, res) => {
 
         if (!Array.isArray(req.body.image)) {
             // Handle the case when req.body.image is not an array
+            console.log("Invalid Image data")
             return res.status(400).send(responseError('Invalid image data'));
         }
 
