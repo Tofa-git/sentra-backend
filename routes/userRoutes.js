@@ -13,7 +13,9 @@ router.post('/verifyUserToken', userController.verifyToken)
 
 // router.post('/verifyUserOtp',userController.verifyToken)
 
-router.get('/users', userController.getUsers);
+router.get('/users', auth, userController.getUsers);
+
+router.get('/users-dd', auth, userController.usersDD);
 
 router.get('/user', auth, userController.getUser);
 

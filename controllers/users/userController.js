@@ -27,6 +27,18 @@ const getUsers = async (req, res) => {
     }
 }
 
+const usersDD = async (req, res) => {
+    try {
+        const data = await userModel.findAll({
+            attributes: ['id', 'firstName', 'lastName', 'email', 'mobile', 'address', 'image'],
+        });
+
+        res.status(200).send(responseSuccess('Data found.', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
+
 const getUser = async (req, res, next) => {
     try {
         const id = req.user?.id;
@@ -183,4 +195,5 @@ module.exports = {
     verifyToken,
     getUsers,
     getUser,
+    usersDD,
 }
