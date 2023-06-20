@@ -96,7 +96,7 @@ const recheckHotels = async (req, res) => {
                 "RoomDetails": {
                     "Code": req.body.roomCode,
                     "MealPlan": req.body.mealPlan,
-                    "CancellationPolicyType": "Flexi",
+                    "CancellationPolicyType": req.body.cancelPolicyType,
                     "PackageRate": false
                 },
                 "Rooms": {
