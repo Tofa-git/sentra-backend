@@ -1,6 +1,7 @@
 "use strict"
 
 const fs = require('fs');
+const path = require('path');
 const db = require('../../config/sequelize');
 const { responseSuccess, responseError } = require('../../utils/response');
 const fileModel = db.file;
@@ -14,7 +15,6 @@ const create = async (req, res) => {
             console.log("Invalid Image data")
             return res.status(400).send(responseError('Invalid image data'));
         }
-
         req.body.image.map(v => {
             // to declare some path to store your converted image
             const url = '/images/hotel/' + Date.now() + '.png'
