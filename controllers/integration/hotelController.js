@@ -27,7 +27,7 @@ const searchHotels = async (req, res) => {
                 "City": req.body.city,
                 "Hotels": {
                     "Code": [
-                        req.body.codeHotel,
+                        req.body.hotelCode,
                     ]
                 },
                 "CheckIn": req.body.checkIn,
