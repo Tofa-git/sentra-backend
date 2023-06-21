@@ -11,8 +11,11 @@ const middleErrMsg = require('../config/errorMsg');
 const { masterChargeTypes } = require('../config/sequelize');
 
 router.post('/search-hotel', auth, integrationHotelController.searchHotels);
-router.post('/recheck', auth, extractFile, integrationHotelController.recheckHotels, middleErrMsg);
-router.post('/booking', auth, extractFile, integrationHotelController.bookingHotels, middleErrMsg);
+router.post('/recheck', auth, integrationHotelController.recheckHotels);
+router.post('/booking', auth, integrationHotelController.bookingHotels);
+router.get('/booking-list', auth, integrationHotelController.bookingList);
+router.get('/booking-detail/:id', auth, integrationHotelController.bookingDetail);
+router.put('/booking-cancel/:id', auth, integrationHotelController.bookingCancel);
 
 router.post('/list-hotel', auth, extractFile, integrationMasterController.listHotels, middleErrMsg);
 router.post('/sync-hotel', auth, integrationMasterController.syncHotel);

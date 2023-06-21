@@ -1,12 +1,13 @@
 
 "use strict"
 
-const chalk = require('chalk');
-const { request } = require('express');
 const db = require('../../config/sequelize');
-const msHotelModel = db.masterHotel;
-const AppError = require('../../utils/appError')
+const bookingModel = db.booking;
+const bookingGuestModel = db.bookingGuest;
 const crypto = require('crypto');
+const { Op } = require('sequelize');
+const { paginattionGenerator } = require('../../utils/pagination');
+const moment = require('moment/moment');
 
 var axios = require('axios');
 const { responseSuccess, responseError } = require('../../utils/response');
@@ -191,7 +192,152 @@ const bookingHotels = async (req, res) => {
         axios(config)
             .then(function (data) {
                 if (data.data.status) {
+                    bookingModel.create({
+                        mgBookingID: data?.data?.bookingDetails.mgBookingID,
+                        agencyBookingID: data?.data?.bookingDetails.agencyBookingID,
+                        mgBookingVersionID: data?.data?.bookingDetails.mgBookingVersionID,
+                        agencyVoucherNo: data?.data?.bookingDetails.agencyVoucherNo,
+                        agencyVoucherDate: data?.data?.bookingDetails.agencyVoucherDate,
+                        hotelCode: data?.data?.bookingDetails.hotels.hotel.code,
+                        hotelName: data?.data?.bookingDetails.hotels.hotel.name,
+                        roomCode: data?.data?.bookingDetails.hotels.hotel.roomDetails.code,
+                        roomName: data?.data?.bookingDetails.hotels.hotel.roomDetails.name,
+                        checkIn: req.body.checkIn,
+                        checkOut: req.body.checkOut,
+                        mealPlan: req.body.mealPlan,
+                        cancellationPolicyType: req.body.cancelPolicyType,
+                        netPrice: data?.data?.bookingDetails.hotels.hotel.roomDetails.netPrice,
+                        grossPrice: data?.data?.bookingDetails.hotels.hotel.roomDetails.grossPrice,
+                        createdBy: req.user.id,
+                    });
+
+                    let guests = [];
+                    req.body.guests.map(v => {
+                        guests.push({
+                            ...v,
+                            mgBookingID: data?.data?.bookingDetails.mgBookingID,
+                            createdBy: req.user.id,
+                        });
+                    })
+                    bookingGuestModel.bulkCreate(guests);
+
                     res.status(200).send(responseSuccess('successfully book', data?.data?.bookingDetails))
+                } else {
+                    res.status(500).send(responseError(data.data.errorMessage))
+                }
+            })
+            .catch(function (error) {
+                throw error
+            });
+
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
+
+const bookingList = async (req, res) => {
+    try {
+        const query = await bookingModel.findAndCountAll({
+            attributes: [
+                'id',
+                'mgBookingID',
+                'mgBookingVersionID',
+                'agencyVoucherNo',
+                'agencyVoucherDate',
+                'hotelCode',
+                'hotelName',
+                'roomCode',
+                'roomName',
+                'checkIn',
+                'checkOut',
+                'mealPlan',
+                'cancellationPolicyType',
+                'netPrice',
+                'grossPrice',
+                'createdAt',
+            ],
+            offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
+            limit: req.query.limit ? +req.query.limit : 10,
+            where: {
+                mgBookingID: {
+                    [Op.like]: ['%' + (req.query.mgBookingID ?? '') + '%'],
+                },
+            }
+        });
+
+        const data = paginattionGenerator(req, query);
+
+        res.status(200).send(responseSuccess('Success', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
+
+const bookingDetail = async (req, res) => {
+    try {
+        const config = {
+            method: 'post',
+            url: `${process.env.JARVIS_URL}Hotel/GetRSVNDetails`,
+            data: {
+                "Login": {
+                    "AgencyCode": process.env.JARVIS_AGENCY_CODE,
+                    "Username": process.env.JARVIS_USER,
+                    "Password": process.env.JARVIS_PASS,
+                },
+                "MGBookingID": req.params.id,
+                "AgencyBookingID": "",
+                "Language": "EN",
+                "DetailLevel": "FULL"
+            },
+            headers: {
+                'Accept': 'application/json'
+            }
+        };
+
+        axios(config)
+            .then(function (data) {
+                if (data.data.status) {
+                    res.status(200).send(responseSuccess('successfully retrieving', data?.data?.bookingDetails))
+                } else {
+                    res.status(500).send(responseError(data.data.errorMessage))
+                }
+            })
+            .catch(function (error) {
+                throw error
+            });
+
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
+
+const bookingCancel = async (req, res) => {
+    try {
+        const config = {
+            method: 'post',
+            url: `${process.env.JARVIS_URL}Hotel/CancelReservation`,
+            data: {
+                "Login": {
+                    "AgencyCode": process.env.JARVIS_AGENCY_CODE,
+                    "Username": process.env.JARVIS_USER,
+                    "Password": process.env.JARVIS_PASS,
+                },
+                "MGBookingID": req.params.id,
+                "AgencyBookingID": "",
+                "SimulationFlag": false,
+                "CancelDate": moment().format('YYYY-MM-DD'),
+                "Language": "EN",
+                "DetailLevel": "FULL"
+            },
+            headers: {
+                'Accept': 'application/json'
+            }
+        };
+
+        axios(config)
+            .then(function (data) {
+                if (data.data.status) {
+                    res.status(200).send(responseSuccess('successfully cancel', data?.data?.bookingDetails))
                 } else {
                     res.status(500).send(responseError(data.data.errorMessage))
                 }
@@ -208,5 +354,8 @@ const bookingHotels = async (req, res) => {
 module.exports = {
     searchHotels,
     recheckHotels,
-    bookingHotels
+    bookingHotels,
+    bookingList,
+    bookingDetail,
+    bookingCancel,
 }

@@ -79,6 +79,8 @@ db.logActivity = require('../models/log/logActivitiesModel')(sequelize, DataType
 
 // Transaction
 db.exchangeRate  = require('../models/transaction/exchangeRatesModel')(sequelize,DataTypes);
+db.booking = require('../models/transaction/bookingModel')(sequelize,DataTypes);
+db.bookingGuest = require('../models/transaction/bookingGuestModel')(sequelize,DataTypes);
 
 // Testing
 db.products = require('../models/producteModel')(sequelize, DataTypes);
