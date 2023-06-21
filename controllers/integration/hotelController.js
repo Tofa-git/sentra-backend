@@ -59,9 +59,16 @@ const searchHotels = async (req, res) => {
         axios(config)
             .then(data => {
                 if (data.data.status) {
+                    let hotels = data?.data?.hotels?.hotel;
+                    hotels.map(h => {
+                        h.roomDetails.map((r, ri) => {
+                            r.id = (ri + 1)
+                        })
+                    })
+
                     res.status(200).send(responseSuccess('success', {
                         sessionId: data?.data?.sessionID,
-                        hotels: data?.data?.hotels?.hotel,
+                        hotels,
                     }))
                 } else {
                     res.status(500).send(responseError(data.data.errorMessage))
@@ -206,8 +213,8 @@ const bookingHotels = async (req, res) => {
                         checkOut: req.body.checkOut,
                         mealPlan: req.body.mealPlan,
                         cancellationPolicyType: req.body.cancelPolicyType,
-                        netPrice: data?.data?.bookingDetails.hotels.hotel.roomDetails.netPrice,
-                        grossPrice: data?.data?.bookingDetails.hotels.hotel.roomDetails.grossPrice,
+                        netPrice: parseInt(data?.data?.bookingDetails.hotels.hotel.roomDetails.netPrice),
+                        grossPrice: parseInt(data?.data?.bookingDetails.hotels.hotel.roomDetails.grossPrice),
                         createdBy: req.user.id,
                     });
 
