@@ -216,6 +216,7 @@ const bookingHotels = async (req, res) => {
                         netPrice: parseInt(data?.data?.bookingDetails.hotels.hotel.roomDetails.netPrice),
                         grossPrice: parseInt(data?.data?.bookingDetails.hotels.hotel.roomDetails.grossPrice),
                         createdBy: req.user.id,
+                        status: 1,
                     });
 
                     let guests = [];
@@ -269,6 +270,7 @@ const bookingList = async (req, res) => {
                 mgBookingID: {
                     [Op.like]: ['%' + (req.query.mgBookingID ?? '') + '%'],
                 },
+                status: 1,
             }
         });
 
@@ -302,9 +304,65 @@ const bookingDetail = async (req, res) => {
         };
 
         axios(config)
-            .then(function (data) {
+            .then(async function (data) {
                 if (data.data.status) {
-                    res.status(200).send(responseSuccess('successfully retrieving', data?.data?.bookingDetails))
+                    const [local] = await db.sequelize.query(`
+                        SELECT
+                            b.id bookingId,
+                            b.mgBookingID bookingMgBookingID,
+                            b.mgBookingVersionID bookingMgBookingVersionID,
+                            b.agencyVoucherNo bookingAgencyVoucherNo,
+                            b.agencyVoucherDate bookingAgencyVoucherDate,
+                            b.hotelCode bookingHotelCode,
+                            b.hotelName bookingHotelName,
+                            b.roomCode bookingRoomCode,
+                            b.roomName bookingRoomName,
+                            b.checkIn bookingCheckIn,
+                            b.checkOut bookingCheckOut,
+                            b.mealPlan bookingMealPlan,
+                            b.cancellationPolicyType bookingCancellationPolicyType,
+                            b.netPrice bookingNetPrice,
+                            b.grossPrice bookingGrossPrice,
+                            b.chargeNetPrice bookingChargeNetPrice,
+                            b.chargeGrossPrice bookingChargeGrossPrice,
+                            b.createdAt bookingCreatedAt,
+                            b.status bookingStatus,
+                            h.countryCode hotelCountryCode,
+                            h.cityCode hotelCityCode,
+                            h.locationCode hotelLocationCode,
+                            h.name hotelName,
+                            h.code hotelCode,
+                            h.email hotelEmail,
+                            h.phone hotelPhone,
+                            h.website hotelWebsite,
+                            h.address hotelAddress,
+                            h.zipCode hotelZipCode,
+                            h.latitude hotelLatitude,
+                            h.longitude hotelLongitude,
+                            h.checkInTime hotelCheckInTime,
+                            h.checkOutTime hotelCheckOutTime,
+                            h.extra hotelExtra,
+                            h.star hotelStar,
+                            h.totalRoom hotelTotalRoom,
+                            h.status hotelStatus,
+                            u.id userId,
+                            u.firstName userFirstName,
+                            u.lastName userLastName,
+                            u.email userEmail,
+                            u.mobile userMobile,
+                            u.address userAddress,
+                            u.image userImage
+                        FROM bookings b
+                        INNER JOIN ms_hotels h ON h.code = b.hotelCode
+                        INNER JOIN users u ON u.id = b.createdBy
+                        WHERE b.mgBookingID = '${req.params.id}'
+                            AND b.status = '1'
+                    `);
+
+                    res.status(200).send(responseSuccess('successfully retrieving', {
+                        ...data?.data?.bookingDetails,
+                        local,
+                    }))
                 } else {
                     res.status(500).send(responseError(data.data.errorMessage))
                 }

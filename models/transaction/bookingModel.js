@@ -54,6 +54,15 @@ module.exports = (sequelize, DataTypes) => {
         grossPrice: {
             type: DataTypes.FLOAT,
         },
+        chargeNetPrice: {
+            type: DataTypes.FLOAT,
+        },
+        chargeGrossPrice: {
+            type: DataTypes.FLOAT,
+        },
+        status: {
+            type: DataTypes.STRING,
+        },
         createdBy: {
             type: DataTypes.INTEGER,
             allowNull: false,
