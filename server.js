@@ -74,6 +74,9 @@ const port = process.env.APP_PORT || 4000;
 const userRouter = require('./routes/userRoutes');
 app.use('/api', userRouter)
 
+const supplierRouter = require('./routes/supplierRoutes');
+app.use('/api', supplierRouter)
+
 const productRouter = require('./routes/productRoutes');
 app.use('/api', productRouter)
 

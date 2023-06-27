@@ -19,8 +19,7 @@ const getUsers = async (req, res) => {
             attributes: ['id', 'firstName', 'lastName', 'email', 'mobile', 'address', 'image'],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
-        });
-
+        });        
         res.status(200).send(responseSuccess('Data found.', data));
     } catch (error) {
         res.status(500).send(responseError(error))

@@ -42,9 +42,14 @@ db.cxlPolicyDetail = require('../models/cxl/cxlPolicyDetail')(sequelize, DataTyp
 
 // User
 db.users = require('../models/users/userModel')(sequelize, DataTypes);
+db.userSales = require('../models/users/userSalesModel')(sequelize, DataTypes);
 db.roles= require('../models/users/userRoleModel')(sequelize, DataTypes);
 db.masterMenu = require('../models/users/menu/masterMenuModel')(sequelize, DataTypes);
 db.accessRole = require('../models/users/menu/masterAccessRoleModel')(sequelize, DataTypes);
+
+// Supplier
+db.supplier = require('../models/supplier/supplier.js')(sequelize, DataTypes);
+db.supplierManager = require('../models/supplier/suplierManager.js')(sequelize, DataTypes);
 
 // Master Data
 db.masterBreakfasts = require('../models/masterData/masterBreakfastModel')(sequelize, DataTypes);
