@@ -217,6 +217,8 @@ const bookingHotels = async (req, res) => {
                         grossPrice: parseInt(data?.data?.bookingDetails.hotels.hotel.roomDetails.grossPrice),
                         createdBy: req.user.id,
                         status: 1,
+                        roomDetail: JSON.stringify(req.body.roomDetail),
+                        additionalRequest: JSON.stringify(req.body.additionalRequest),
                     });
 
                     let guests = [];
@@ -327,6 +329,8 @@ const bookingDetail = async (req, res) => {
                             b.chargeGrossPrice bookingChargeGrossPrice,
                             b.createdAt bookingCreatedAt,
                             b.status bookingStatus,
+                            b.roomDetail bookingRoomDetail,
+                            b.additionalRequest bookingAdditionalRequest,
                             h.countryCode hotelCountryCode,
                             h.cityCode hotelCityCode,
                             h.locationCode hotelLocationCode,
@@ -365,9 +369,16 @@ const bookingDetail = async (req, res) => {
                             AND b.status = '1'
                     `);
 
+                    const guests = await bookingGuestModel.findAll({ where: { mgBookingID: req.params.id } })
+
                     res.status(200).send(responseSuccess('successfully retrieving', {
                         ...data?.data?.bookingDetails,
-                        local,
+                        local: {
+                            ...local[0],
+                            bookingRoomDetail: JSON.parse(local[0].bookingRoomDetail),
+                            bookingAdditionalRequest: JSON.parse(local[0].bookingAdditionalRequest),
+                            guests,
+                        },
                     }))
                 } else {
                     res.status(500).send(responseError(data.data.errorMessage))

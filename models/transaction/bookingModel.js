@@ -63,6 +63,12 @@ module.exports = (sequelize, DataTypes) => {
         status: {
             type: DataTypes.STRING,
         },
+        roomDetail: {
+            type: DataTypes.TEXT,
+        },
+        additionalRequest: {
+            type: DataTypes.TEXT,
+        },
         createdBy: {
             type: DataTypes.INTEGER,
             allowNull: false,
