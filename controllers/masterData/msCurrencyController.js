@@ -5,7 +5,9 @@ const { request } = require('express');
 const db = require('../../config/sequelize');
 const msCurrencyModel = db.masterCurrency;
 const AppError = require('../../utils/appError')
-
+const { responseSuccess, responseError } = require('../../utils/response');
+const { paginattionGenerator } = require('../../utils/pagination');
+const { Op } = require('sequelize');
 
 const addMsCurrencys = async (req, res) => {
     // Extract userId from JWT token
@@ -14,11 +16,11 @@ const addMsCurrencys = async (req, res) => {
     if (req.body && Array.isArray(req.body)) {
         const datas = req.body.map(
             response => {
-                return {                    
+                return {
                     symbol: response.symbol,
                     name: response.name,
                     status: 1,
-                    createdBy:userId,
+                    createdBy: userId,
                 }
             });
         await msCurrencyModel.bulkCreate(datas).then(data => {
@@ -38,27 +40,37 @@ const addMsCurrencys = async (req, res) => {
 }
 
 const getMsCurrencys = async (req, res, next) => {
-    if (!req.query.size || !req.query.page) return res.status(500).send({ message: 'page number and page size are required !' })
-    let pageSize = +req.query.size;
-    if (pageSize > 100) {
-        pageSize = 100;
-    }
-    let pageOffset = ((+req.query.page - 1) * +req.query.size);
-    const data = await msCurrencyModel.findAll({
-        data: [
-            'id',
-            'symbol',
-            'name',
-            'status'
-        ],
-        offset: pageOffset,
-        limit: pageSize,
-    });
+    try {
+        const query = await msCurrencyModel.findAndCountAll({
+            attributes: [
+                'id',
+                'name',
+                'code',
+                'symbol',
+            ],
+            offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
+            limit: req.query.limit ? +req.query.limit : 10,
+            where: {
+                [Op.and]: [
+                    {
+                        name: {
+                            [Op.like]: ['%' + (req.query.name ?? '') + '%'],
+                        },
+                    },
+                    {
+                        code: {
+                            [Op.like]: ['%' + (req.query.code ?? '') + '%'],
+                        },
+                    },
+                ]
+            }
+        });
 
-    if (data.length > 0) {
-        res.status(200).send({ message: 'Success.', data: data });
-    } else {
-        res.status(404).send({ message: 'The data is not found.' });
+        const data = paginattionGenerator(req, query);
+
+        res.status(200).send(responseSuccess('Success', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
     }
 
 }
@@ -91,7 +103,7 @@ const editMsCurrency = async (req, res) => {
                     symbol: response.symbol,
                     name: response.name,
                     status: response.status,
-                    updatedBy:userId,
+                    updatedBy: userId,
                 }
             });
         const updatedData = await msCurrencyModel.update(currencies, { where: { id: id } });
@@ -119,11 +131,23 @@ const deleteMsCurrency = async (req, res) => {
     }
 }
 
+const currencyDD = async (req, res) => {
+    try {
+        const data = await msCurrencyModel.findAll({
+            attributes: ['id', 'symbol', 'code'],
+        });
+
+        res.status(200).send(responseSuccess('Data found.', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
 
 module.exports = {
     addMsCurrencys,
     getMsCurrencys,
     getMsCurrency,
     editMsCurrency,
-    deleteMsCurrency
+    deleteMsCurrency,
+    currencyDD
 }

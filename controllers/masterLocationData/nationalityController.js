@@ -22,6 +22,37 @@ const create = async (req, res) => {
     }
 }
 
+const bulkCreate = async (req, res) => {
+    // Extract userId from JWT token
+    const userId = req.user.id;
+
+    if (req.body && Array.isArray(req.body)) {
+        const datas = req.body.map(
+            data => {
+                return {
+                    name: data.name,
+                    code: data.code,
+                    rank: data.rank ?? 999,
+                    status: 1,
+                    createdBy:userId,
+                }
+            });
+        await nationalityModel.bulkCreate(datas).then(data => {
+            res.status(201).send(responseSuccess('Data created successfully'));
+        })
+            .catch(err => {
+                res.status(500).send({
+                    data: null,
+                    message:
+                        err.message =
+                        "Validation Error" ? err.message : "Some error occurred while creating the data."
+                });
+            });
+    } else {
+        res.status(500).send({ message: 'Bad Request Check Your Request' });
+    }
+}
+
 const list = async (req, res) => {
     try {
         const query = await nationalityModel.findAndCountAll({
@@ -122,6 +153,7 @@ const listDropdown = async (req, res) => {
 
 module.exports = {
     create,
+    bulkCreate,
     list,
     detail,
     update,

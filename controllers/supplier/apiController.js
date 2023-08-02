@@ -4,20 +4,23 @@ const db = require('../../config/sequelize');
 // const bcrypt = require('bcrypt');
 const constants = require('../../config/constants');
 const jwt = require('jsonwebtoken');
-const supplierManagerModel = db.supplierManager;
 const supplierModel = db.supplier;
+const cityDataModel = db.cityCode;
+const supplierApiModel = db.supplierApi;
 const generalConfig = require('../../config/generalConfig');
 const { success, error, validation } = require("../../utils/responseApi");
 const { responseSuccess, responseError } = require('../../utils/response');
 
 
-const getSupmans = async (req, res) => {
+const getSupApis = async (req, res) => {
     try {
-        const data = await supplierManagerModel.findAll({
-            attributes: ['id', 'supplierId', 'uid', 'name', 'mobile', 'email'],
+
+        const data = await supplierApiModel.findAll({
+            attributes: ['id', 'supplierId', 'name', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
         });
+
 
         // Retrieve the supplier data for each entry
         const responseData = await Promise.all(
@@ -25,6 +28,7 @@ const getSupmans = async (req, res) => {
                 const supplierData = await supplierModel.findOne({
                     where: { id: entry.supplierId },
                     attributes: [
+                        'id',
                         'code',
                         'name',
                         'category',
@@ -35,6 +39,7 @@ const getSupmans = async (req, res) => {
                         'ccEmail',
                         'address',
                         'url',
+                        'urlApi',
                         'remark',
                         'creditDay',
                         'exchangeRate',
@@ -47,7 +52,7 @@ const getSupmans = async (req, res) => {
 
                 return {
                     ...entry.toJSON(),
-                    supplier: supplierData.toJSON(),
+                    supplier: supplierData ? supplierData.toJSON() : null,
                 };
             })
         );
@@ -58,10 +63,13 @@ const getSupmans = async (req, res) => {
     }
 }
 
-const supmanDD = async (req, res) => {
+const supApiDD = async (req, res) => {
     try {
-        const data = await supplierManagerModel.findAll({
-            attributes: ['id', 'supplierId', 'uid', 'name', 'mobile', 'email'],
+        const data = await supplierApiModel.findAll({
+            attributes:
+                [
+                    'id', 'cityId', 'supplierManId', 'phoneFirst', 'phoneSecond', 'status'
+                ],
         });
 
         res.status(200).send(responseSuccess('Data found.', data));
@@ -70,11 +78,11 @@ const supmanDD = async (req, res) => {
     }
 }
 
-const getSupman = async (req, res, next) => {
+const getSupApi = async (req, res, next) => {
     try {
         const id = req.params?.id;
-        const data = await supplierManagerModel.findOne({
-            attributes: ['id', 'supplierId', 'uid', 'name', 'mobile', 'email'],
+        const data = await supplierApiModel.findOne({
+            attributes: ['id', 'supplierId', 'name', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
             where: { id },
         });
 
@@ -82,9 +90,24 @@ const getSupman = async (req, res, next) => {
             return res.status(404).send(responseError('Data not found.'));
         }
 
+        // Decrypt the encrypted attributes
+        const decryptedData = {
+            id: data.id,
+            supplierId: data.supplierId,
+            name: data.name,
+            endpoint: generalConfig.decryptData(data.endpoint),
+            method: data.method,
+            code: generalConfig.decryptData(data.code),
+            user: generalConfig.decryptData(data.user),
+            password: generalConfig.decryptData(data.password),
+            body: generalConfig.decryptData(data.body),
+            status: data.status,
+        };
+
         const supplierData = await supplierModel.findOne({
             where: { id: data.supplierId },
             attributes: [
+                'id',
                 'code',
                 'name',
                 'category',
@@ -95,6 +118,7 @@ const getSupman = async (req, res, next) => {
                 'ccEmail',
                 'address',
                 'url',
+                'urlApi',
                 'remark',
                 'creditDay',
                 'exchangeRate',
@@ -106,7 +130,7 @@ const getSupman = async (req, res, next) => {
         });
 
         const responseData = {
-            ...data.toJSON(),
+            ...decryptedData,
             supplier: supplierData ? supplierData.toJSON() : null,
         };
 
@@ -116,7 +140,8 @@ const getSupman = async (req, res, next) => {
     }
 };
 
-const createSupman = async (req, res, next) => {
+const createSupApi = async (req, res, next) => {
+    // console.log(req)
     const userId = req.user.id;
     // let passwordHash = generalConfig.encryptPassword(req.body.password);    
     if (req.body && Array.isArray(req.body)) {
@@ -124,11 +149,13 @@ const createSupman = async (req, res, next) => {
             supplier => {
                 return {
                     supplierId: supplier.supplierId,
-                    uid: supplier.uid,
                     name: supplier.name,
-                    mobile: supplier.mobile,
-                    email: supplier.email,
-                    password: generalConfig.encryptPassword(supplier.password),
+                    endpoint: generalConfig.encryptData(supplier.endpoint),
+                    method: supplier.method,
+                    code: generalConfig.encryptData(supplier.code),
+                    user: generalConfig.encryptData(supplier.user),
+                    password: generalConfig.encryptData(supplier.password),
+                    body: generalConfig.encryptData(supplier.body),
                     createdBy: userId,
                     status: 1,
                 }
@@ -136,8 +163,8 @@ const createSupman = async (req, res, next) => {
 
 
         try {
-            await supplierManagerModel.bulkCreate(suppliers).then(data => {
-                res.status(201).send({ data: data, message: 'Supplier Manager Created successfully' });
+            await supplierApiModel.bulkCreate(suppliers).then(data => {
+                res.status(201).send({ data: data, message: 'Supplier API Created successfully' });
             })
                 .catch(err => {
                     res.status(500).send({
@@ -163,8 +190,10 @@ const update = async (req, res) => {
         const currencies = req.body.map(
             response => {
                 return {
-                    symbol: response.symbol,
-                    name: response.name,
+                    cityId: response.cityId,
+                    supplierManId: response.supplierManId,
+                    phoneFirst: response.phoneFirst,
+                    phoneSecond: response.phoneSecond,
                     status: response.status,
                     updatedBy: userId,
                 }
@@ -192,10 +221,10 @@ const destroy = async (req, res) => {
 }
 
 module.exports = {
-    createSupman,
-    getSupman,
-    getSupmans,
-    supmanDD,
+    createSupApi,
+    getSupApi,
+    getSupApis,
+    supApiDD,
     update,
     destroy,
 }

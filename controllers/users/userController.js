@@ -1,7 +1,7 @@
 "use strict"
 
 const db = require('../../config/sequelize');
-// const bcrypt = require('bcrypt');
+const { Op } = require('sequelize');
 const constants = require('../../config/constants');
 const jwt = require('jsonwebtoken');
 const userModel = db.users;
@@ -9,17 +9,32 @@ const { sendWelcomeEmail } = require('../../emails/emailAccount');
 const { sendMail } = require('../../services/emailServices');
 const { generateOTP } = require('../../services/otpServices');
 const generalConfig = require('../../config/generalConfig');
-const { success, error, validation } = require("../../utils/responseApi");
+const { paginattionGenerator } = require('../../utils/pagination');
 const { responseSuccess, responseError } = require('../../utils/response');
 
 
 const getUsers = async (req, res) => {
     try {
-        const data = await userModel.findAll({
-            attributes: ['id', 'firstName', 'lastName', 'email', 'mobile', 'address', 'image'],
+        const query = await userModel.findAndCountAll({
+            attributes: ['id', 'firstName', 'lastName', 'email', 'mobile', 'address', 'image','status'],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
-        });        
+            where: {
+                [Op.and]: [
+                    {
+                        email: {
+                            [Op.like]: ['%' + (req.query.email ?? '') + '%'],
+                        },
+                    },
+                    {
+                        firstName: {
+                            [Op.like]: ['%' + (req.query.firstName ?? '') + '%'],
+                        },
+                    },
+                ]
+            }
+        });
+        const data = paginattionGenerator(req, query);
         res.status(200).send(responseSuccess('Data found.', data));
     } catch (error) {
         res.status(500).send(responseError(error))
@@ -47,6 +62,35 @@ const getUser = async (req, res, next) => {
         });
 
         res.status(200).send(responseSuccess('Data found.', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
+
+const update = async (req, res) => {
+    try {
+        await userSalesModel.update({
+            firstName: req.body.firstName,
+            roleId: req.body.roleId,
+            lastName: req.body.lastName,
+            mobile: req.body.mobile,
+            email: req.body.email,
+            password: generalConfig.encryptPassword(req.body.password),
+            address: req.body.address,
+            updatedBy: req.user.id,
+        }, { where: { id: req.params.id } })
+
+        res.status(201).send(responseSuccess('Data updated successfully'));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
+
+const destroy = async (req, res) => {
+    try {
+        await userSalesModel.destroy({ where: { id: req.params.id } });
+
+        res.status(201).send(responseSuccess('Data deleted successfully'));
     } catch (error) {
         res.status(500).send(responseError(error))
     }
@@ -195,4 +239,6 @@ module.exports = {
     getUsers,
     getUser,
     usersDD,
+    update,
+    destroy,
 }

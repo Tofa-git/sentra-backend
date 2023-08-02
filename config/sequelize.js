@@ -40,6 +40,8 @@ db.sequelize = sequelize
 db.cxlPolicy = require('../models/cxl/cxlPolicy')(sequelize, DataTypes);
 db.cxlPolicyDetail = require('../models/cxl/cxlPolicyDetail')(sequelize, DataTypes);
 
+//#region Member
+
 // User
 db.users = require('../models/users/userModel')(sequelize, DataTypes);
 db.userSales = require('../models/users/userSalesModel')(sequelize, DataTypes);
@@ -50,8 +52,11 @@ db.accessRole = require('../models/users/menu/masterAccessRoleModel')(sequelize,
 // Supplier
 db.supplier = require('../models/supplier/supplier.js')(sequelize, DataTypes);
 db.supplierManager = require('../models/supplier/suplierManager.js')(sequelize, DataTypes);
+db.supplierEmergency = require('../models/supplier/supplierEmergency.js')(sequelize, DataTypes);
+db.supplierApi = require('../models/supplier/supplierApi.js')(sequelize, DataTypes);
+//#endregion
 
-// Master Data
+//#region Master Data
 db.masterBreakfasts = require('../models/masterData/masterBreakfastModel')(sequelize, DataTypes);
 db.masterChargeTypes = require('../models/masterData/masterChargeTypeModel')(sequelize, DataTypes);
 db.masterCurrency = require('../models/masterData/masterCurrencyModel')(sequelize, DataTypes);
@@ -62,6 +67,7 @@ db.masterRoomGrade = require('../models/masterData/masterRoomGradeModel')(sequel
 db.masterSession  = require('../models/masterData/masterSessionModel')(sequelize,DataTypes);
 db.holiday = require('../models/masterData/holidayModel')(sequelize,DataTypes);
 db.file = require('../models/masterData/fileModel')(sequelize,DataTypes);
+//#endregion
 
 //#region Master Data Location
 db.nationality = require('../models/masterData/locationData/nationality')(sequelize,DataTypes);
@@ -87,6 +93,8 @@ db.exchangeRate  = require('../models/transaction/exchangeRatesModel')(sequelize
 db.booking = require('../models/transaction/bookingModel')(sequelize,DataTypes);
 db.bookingGuest = require('../models/transaction/bookingGuestModel')(sequelize,DataTypes);
 
+// Mapping
+db.mappingCountry = require('../models/mapping/country.js')(sequelize, DataTypes);
 // Testing
 db.products = require('../models/producteModel')(sequelize, DataTypes);
 // db.reviews = require('./reviewModel.js')(sequelize, DataTypes)

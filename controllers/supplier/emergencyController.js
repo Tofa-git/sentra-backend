@@ -5,63 +5,69 @@ const db = require('../../config/sequelize');
 const constants = require('../../config/constants');
 const jwt = require('jsonwebtoken');
 const supplierManagerModel = db.supplierManager;
-const supplierModel = db.supplier;
+const cityDataModel = db.cityCode;
+const supplierEmergModel = db.supplierEmergency;
 const generalConfig = require('../../config/generalConfig');
 const { success, error, validation } = require("../../utils/responseApi");
 const { responseSuccess, responseError } = require('../../utils/response');
 
 
-const getSupmans = async (req, res) => {
+const getSupEmergs = async (req, res) => {    
     try {
-        const data = await supplierManagerModel.findAll({
-            attributes: ['id', 'supplierId', 'uid', 'name', 'mobile', 'email'],
+        
+        const data = await supplierEmergModel.findAll({
+            attributes: ['id', 'cityId', 'supplierManId', 'phoneFirst', 'phoneSecond', 'status'],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
         });
 
-        // Retrieve the supplier data for each entry
-        const responseData = await Promise.all(
+        
+         // Retrieve the supplier data for each entry
+         const responseData = await Promise.all(
             data.map(async (entry) => {
-                const supplierData = await supplierModel.findOne({
-                    where: { id: entry.supplierId },
+                const supplierData = await supplierManagerModel.findOne({
+                    where: { id: entry.supplierManId },
                     attributes: [
-                        'code',
+                        'id',
+                        'uid',
                         'name',
-                        'category',
                         'mobile',
-                        'fax',
                         'email',
-                        'rqEmail',
-                        'ccEmail',
-                        'address',
-                        'url',
-                        'remark',
-                        'creditDay',
-                        'exchangeRate',
-                        'isEmailVerified',
-                        'agentMarkup',
-                        'xmlMapping',
                         'status',
+                    ],
+                });
+
+                const cityData = await cityDataModel.findOne({
+                    where: { id: entry.cityId },
+                    attributes: [
+                        'id',
+                        'code',
+                        'long_name',
+                        'short_name',
                     ],
                 });
 
                 return {
                     ...entry.toJSON(),
-                    supplier: supplierData.toJSON(),
+                    supplier: supplierData ? supplierData.toJSON() : null,
+                    city: cityData ? cityData.toJSON() : null
                 };
             })
         );
 
         res.status(200).send(responseSuccess('Data found.', responseData));
-    } catch (error) {
+    } catch (error) {        
         res.status(500).send(responseError(error))
     }
 }
 
-const supmanDD = async (req, res) => {
+const supEmergDD = async (req, res) => {
     try {
-        const data = await supplierManagerModel.findAll({
-            attributes: ['id', 'supplierId', 'uid', 'name', 'mobile', 'email'],
+        const data = await supplierEmergModel.findAll({
+            attributes:
+                [
+                    'id', 'cityId', 'supplierManId', 'phoneFirst', 'phoneSecond', 'status'
+                ],
         });
 
         res.status(200).send(responseSuccess('Data found.', data));
@@ -70,11 +76,13 @@ const supmanDD = async (req, res) => {
     }
 }
 
-const getSupman = async (req, res, next) => {
+const getSupEmerg = async (req, res, next) => {
     try {
         const id = req.params?.id;
-        const data = await supplierManagerModel.findOne({
-            attributes: ['id', 'supplierId', 'uid', 'name', 'mobile', 'email'],
+        const data = await supplierEmergModel.findOne({
+            attributes: [
+                'id', 'cityId', 'supplierManId', 'phoneFirst', 'phoneSecond', 'status'
+            ],
             where: { id },
         });
 
@@ -82,32 +90,29 @@ const getSupman = async (req, res, next) => {
             return res.status(404).send(responseError('Data not found.'));
         }
 
-        const supplierData = await supplierModel.findOne({
-            where: { id: data.supplierId },
+        const supplierData = await supplierManagerModel.findOne({
+            where: { id: data.supplierManId },
+            attributes: [
+                'uid',
+                'name',
+                'mobile',
+                'email',
+                'status',
+            ],
+        });
+        const cityData = await cityDataModel.findOne({
+            where: { id: data.cityId },
             attributes: [
                 'code',
-                'name',
-                'category',
-                'mobile',
-                'fax',
-                'email',
-                'rqEmail',
-                'ccEmail',
-                'address',
-                'url',
-                'remark',
-                'creditDay',
-                'exchangeRate',
-                'isEmailVerified',
-                'agentMarkup',
-                'xmlMapping',
-                'status',
+                'long_name',
+                'short_name',
             ],
         });
 
         const responseData = {
             ...data.toJSON(),
             supplier: supplierData ? supplierData.toJSON() : null,
+            city: cityData ? cityData.toJSON() : null
         };
 
         res.status(200).send(responseSuccess('Data found.', responseData));
@@ -116,19 +121,17 @@ const getSupman = async (req, res, next) => {
     }
 };
 
-const createSupman = async (req, res, next) => {
+const createSupEmerg = async (req, res, next) => {
     const userId = req.user.id;
     // let passwordHash = generalConfig.encryptPassword(req.body.password);    
     if (req.body && Array.isArray(req.body)) {
         const suppliers = req.body.map(
             supplier => {
                 return {
-                    supplierId: supplier.supplierId,
-                    uid: supplier.uid,
-                    name: supplier.name,
-                    mobile: supplier.mobile,
-                    email: supplier.email,
-                    password: generalConfig.encryptPassword(supplier.password),
+                    cityId: supplier.cityId,
+                    supplierManId: supplier.supplierManId,
+                    phoneFirst: supplier.phoneFirst,
+                    phoneSecond: supplier.phoneSecond,
                     createdBy: userId,
                     status: 1,
                 }
@@ -136,8 +139,8 @@ const createSupman = async (req, res, next) => {
 
 
         try {
-            await supplierManagerModel.bulkCreate(suppliers).then(data => {
-                res.status(201).send({ data: data, message: 'Supplier Manager Created successfully' });
+            await supplierEmergModel.bulkCreate(suppliers).then(data => {
+                res.status(201).send({ data: data, message: 'Supplier Emergency Created successfully' });
             })
                 .catch(err => {
                     res.status(500).send({
@@ -163,8 +166,10 @@ const update = async (req, res) => {
         const currencies = req.body.map(
             response => {
                 return {
-                    symbol: response.symbol,
-                    name: response.name,
+                    cityId: response.cityId,
+                    supplierManId: response.supplierManId,
+                    phoneFirst: response.phoneFirst,
+                    phoneSecond: response.phoneSecond,
                     status: response.status,
                     updatedBy: userId,
                 }
@@ -192,10 +197,10 @@ const destroy = async (req, res) => {
 }
 
 module.exports = {
-    createSupman,
-    getSupman,
-    getSupmans,
-    supmanDD,
+    createSupEmerg,
+    getSupEmerg,
+    getSupEmergs,
+    supEmergDD,
     update,
     destroy,
 }

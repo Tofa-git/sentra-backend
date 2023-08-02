@@ -22,7 +22,7 @@ const router = require('express').Router();
 const extractFile = require('../middlewares/check-img-mime-type');
 const middleErrMsg = require('../config/errorMsg');
 
-//#region City Code
+//#region Country Code
 router.post('/country-code', auth, msCountryCodeController.create);
 router.get('/country-code', auth, msCountryCodeController.list);
 router.get('/country-code/:id', auth, msCountryCodeController.detail);
@@ -43,6 +43,7 @@ router.get('/city-code-dd/', auth, msCityCodeController.listDropdown);
 
 //#region Nationality
 router.post('/nationality', auth, nationalityController.create);
+router.post('/nationalities', auth, nationalityController.bulkCreate);
 router.get('/nationality', auth, nationalityController.list);
 router.get('/nationality/:id', auth, nationalityController.detail);
 router.put('/nationality/:id', auth, nationalityController.update);
@@ -82,6 +83,7 @@ router.get('/currency', auth, msCurrencyController.getMsCurrencys);
 router.get('/currency/:id', auth, msCurrencyController.getMsCurrency);
 router.put('/currency/:id', auth, extractFile, msCurrencyController.editMsCurrency);
 router.delete('/currency/:id', auth, msCurrencyController.deleteMsCurrency);
+router.get('/currency-dd/', auth, msCurrencyController.currencyDD);
 //#endregion
 
 //#region Hotel

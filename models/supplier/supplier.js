@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
         mobile: {
             type: DataTypes.BIGINT,
             unique: true,
-            allowNull: false,
+            allowNull: true,
             validate: {
                 not: {
                     args: ["[a-z]", 'i'],
@@ -55,12 +55,12 @@ module.exports = (sequelize, DataTypes) => {
         },
         rqEmail: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
             unique: true
         }, 
         ccEmail: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
             unique: true
         },       
         address: {
@@ -69,11 +69,15 @@ module.exports = (sequelize, DataTypes) => {
         },    
         url: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
+        }, 
+        urlApi: {
+            type: DataTypes.STRING,
+            allowNull: true,
         }, 
         remark: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },    
         creditDay: {
             type: DataTypes.INTEGER,
@@ -86,19 +90,23 @@ module.exports = (sequelize, DataTypes) => {
         isEmailVerified: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
+            allowNull: true,
         },
         agentMarkup: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
+            allowNull: true,
         },
         xmlMapping: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
+            allowNull: true,
         },
         status: {
             type: DataTypes.STRING,
             enum: ['0', '1', '2', '3'],
             default: '0',
+            allowNull: true,
         },        
         createdBy: {
             type: DataTypes.INTEGER,

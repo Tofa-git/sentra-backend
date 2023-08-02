@@ -10,11 +10,15 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true
         },
         symbol: {
-            type: DataTypes.INTEGER(4),
+            type: DataTypes.STRING(4),
             require: true
         },
+        code: {
+            type: DataTypes.STRING(4),
+            require: true,                        
+        },
         name: {
-            type: DataTypes.STRING(8),
+            type: DataTypes.STRING(20),
             require: true,                        
         },
         status: {

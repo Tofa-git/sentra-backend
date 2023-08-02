@@ -1,21 +1,37 @@
 "use strict"
 
 const db = require('../../config/sequelize');
+const { Op } = require('sequelize');
 // const bcrypt = require('bcrypt');
 const constants = require('../../config/constants');
 const jwt = require('jsonwebtoken');
 const userSalesModel = db.userSales;
-const { success, error, validation } = require("../../utils/responseApi");
+const { paginattionGenerator } = require('../../utils/pagination');
 const { responseSuccess, responseError } = require('../../utils/response');
 
 
 const getSales = async (req, res) => {
     try {
-        const data = await userSalesModel.findAll({
+        const query = await userSalesModel.findAndCountAll({
             attributes: ['id', 'username', 'name', 'email', 'mobile','manager'],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
+            where: {
+                [Op.and]: [
+                    {
+                        email: {
+                            [Op.like]: ['%' + (req.query.email ?? '') + '%'],
+                        },
+                    },
+                    {
+                        name: {
+                            [Op.like]: ['%' + (req.query.name ?? '') + '%'],
+                        },
+                    },
+                ]
+            }
         });        
+        const data = paginattionGenerator(req, query);
         res.status(200).send(responseSuccess('Data found.', data));
     } catch (error) {
         res.status(500).send(responseError(error))
@@ -84,9 +100,39 @@ const createSale = async (req, res, next) => {
     }
 }
 
+const update = async (req, res) => {
+    try {
+        await userSalesModel.update({
+            username: req.body.username,
+            name: req.body.name,
+            manager: req.body.manager,
+            mobile: req.body.mobile,
+            email: req.body.email,                                        
+            status: req.body.status,
+            updatedBy: req.user.id,
+        }, { where: { id: req.params.id } })
+
+        res.status(201).send(responseSuccess('Data updated successfully'));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
+
+const destroy = async (req, res) => {
+    try {
+        await userSalesModel.destroy({ where: { id: req.params.id } });
+
+        res.status(201).send(responseSuccess('Data deleted successfully'));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
+
 module.exports = {
     createSale,        
     getSales,
     getSale,    
     salesDD,
+    update,
+    destroy,
 }
