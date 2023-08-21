@@ -331,8 +331,8 @@ const bookingDetail = async (req, res) => {
                             b.status bookingStatus,
                             b.roomDetail bookingRoomDetail,
                             b.additionalRequest bookingAdditionalRequest,
-                            h.countryCode hotelCountryCode,
-                            h.cityCode hotelCityCode,
+                            h.countryId hotelCountryCode,
+                            h.cityId hotelCityCode,
                             h.locationCode hotelLocationCode,
                             h.name hotelName,
                             h.code hotelCode,
@@ -362,8 +362,8 @@ const bookingDetail = async (req, res) => {
                         FROM bookings b
                         INNER JOIN ms_hotels h ON h.code = b.hotelCode
                         INNER JOIN users u ON u.id = b.createdBy
-                        LEFT JOIN country_code co ON co.isoId COLLATE utf8mb4_general_ci = h.countryCode
-                        LEFT JOIN city_code ci ON ci.code COLLATE utf8mb4_general_ci = h.cityCode
+                        LEFT JOIN country_code co ON co.isoId COLLATE utf8mb4_general_ci = h.countryId
+                        LEFT JOIN city_code ci ON ci.code COLLATE utf8mb4_general_ci = h.cityId
                         LEFT JOIN city_location l ON l.code = h.locationCode
                         WHERE b.mgBookingID = '${req.params.id}'
                             AND b.status = '1'

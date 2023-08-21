@@ -38,7 +38,7 @@ const syncMappingCountry = async (req, res, next) => {
     try {
         const id = req.params?.id;
         const data = await supplierApiModel.findOne({
-            attributes: ['id', 'supplierId', 'name', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
+            attributes: ['id', 'supplierId', 'name', 'url','endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
             where: {
                 supplierId: id,
                 name: 'Country' // Add the condition where name = 'Country'
@@ -277,149 +277,6 @@ const destroyCountry = async (req, res) => {
     }
 }
 
-const syncMappingCity = async (req, res, next) => {
-    try {
-        const id = req.params?.id;
-        const data = await supplierApiModel.findOne({
-            attributes: ['id', 'supplierId', 'name', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
-            where: {
-                supplierId: id,
-                name: 'City' // Add the condition where name = 'City'
-            },
-        });
-
-        if (!data) {
-            return res.status(404).send(responseError('Data not found.'));
-        }
-
-        // Decrypt the encrypted attributes
-        const decryptedData = {
-            id: data.id,
-            supplierId: data.supplierId,
-            name: data.name,
-            endpoint: generalConfig.decryptData(data.endpoint),
-            method: data.method,
-            code: generalConfig.decryptData(data.code),
-            user: generalConfig.decryptData(data.user),
-            password: generalConfig.decryptData(data.password),
-            body: generalConfig.decryptData(data.body),
-            status: data.status,
-        };
-
-        const supplierData = await supplierModel.findOne({
-            where: { id: data.supplierId },
-            attributes: [
-                'id',
-                'code',
-                'name',
-                'urlApi',
-                'status',
-            ],
-        });
-
-        const responseData = {
-            ...decryptedData,
-            supplier: supplierData ? supplierData.toJSON() : null,
-        };
-
-        // Parse the JSON string in the body
-        const bodyData = JSON.parse(responseData.body);
-
-        // Replace placeholders in bodyData with actual values from responseData
-        bodyData.Login.AgencyCode = responseData.code;
-        bodyData.Login.Username = responseData.user;
-        bodyData.Login.Password = responseData.password;
-        console.log(bodyData)
-        // Transform bodyData into the data field of the config object
-        const configData = {
-            ...bodyData,
-        };
-
-        // Merge the configData with the other properties of the config object
-        const config = {
-            method: 'post',
-            url: `${responseData.supplier.urlApi}${responseData.endpoint}`,
-            data: configData,
-            headers: {
-                'Accept': 'application/json'
-            }
-        };
-
-        axios(config)
-            .then(function (response) {
-                console.log(JSON.stringify(response.data));
-            })
-            .catch(function (error) {
-                res.status(500).send(responseError(error));
-            });
-
-        res.status(200).send(responseSuccess('Data found.', responseData));
-    } catch (error) {
-        res.status(500).send(responseError(error));
-    }
-};
-
-const showMappingCity = async (req, res, next) => {
-    try {
-        const id = req.params?.id;
-        const data = await supplierApiModel.findOne({
-            attributes: ['id', 'supplierId', 'name', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
-            where: { id },
-        });
-
-        if (!data) {
-            return res.status(404).send(responseError('Data not found.'));
-        }
-
-        // Decrypt the encrypted attributes
-        const decryptedData = {
-            id: data.id,
-            supplierId: data.supplierId,
-            name: data.name,
-            endpoint: generalConfig.decryptData(data.endpoint),
-            method: data.method,
-            code: generalConfig.decryptData(data.code),
-            user: generalConfig.decryptData(data.user),
-            password: generalConfig.decryptData(data.password),
-            body: generalConfig.decryptData(data.body),
-            status: data.status,
-        };
-
-        const supplierData = await supplierModel.findOne({
-            where: { id: data.supplierId },
-            attributes: [
-                'id',
-                'code',
-                'name',
-                'category',
-                'mobile',
-                'fax',
-                'email',
-                'rqEmail',
-                'ccEmail',
-                'address',
-                'url',
-                'urlApi',
-                'remark',
-                'creditDay',
-                'exchangeRate',
-                'isEmailVerified',
-                'agentMarkup',
-                'xmlMapping',
-                'status',
-            ],
-        });
-
-        const responseData = {
-            ...decryptedData,
-            supplier: supplierData ? supplierData.toJSON() : null,
-        };
-
-        res.status(200).send(responseSuccess('Data found.', responseData));
-    } catch (error) {
-        res.status(500).send(responseError(error));
-    }
-};
 
 module.exports = {
     syncMappingCountry,
@@ -427,6 +284,4 @@ module.exports = {
     createCountry,
     updateCountry,
     destroyCountry,
-    syncMappingCity,
-    showMappingCity
 }

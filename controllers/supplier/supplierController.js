@@ -65,7 +65,7 @@ const getSuppliers = async (req, res) => {
             data.rows.map(async (entry) => {
                 const suppapiData = await suppapiModel.findAll({
                     where: { supplierId: entry.id },
-                    attributes: ['id', 'supplierId', 'name', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
+                    attributes: ['id', 'supplierId','url', 'name', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
                 });
 
                 const suppmanData = await suppmanModel.findAll({
@@ -178,7 +178,7 @@ const getSupplier = async (req, res, next) => {
 
         const suppapiData = await suppapiModel.findAll({
             where: { supplierId: entry.id },
-            attributes: ['id', 'supplierId', 'name', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
+            attributes: ['id', 'supplierId', 'url','name', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
         });
 
         const responseData = {

@@ -140,16 +140,18 @@ const getSupApi = async (req, res, next) => {
     }
 };
 
-const createSupApi = async (req, res, next) => {
-    // console.log(req)
-    const userId = req.user.id;
-    // let passwordHash = generalConfig.encryptPassword(req.body.password);    
-    if (req.body && Array.isArray(req.body)) {
-        const suppliers = req.body.map(
-            supplier => {
+const createSupApi = async (req, res) => {
+    const userId = req.user.id; // Assuming userId is already defined
+
+    let suppliers = [];
+
+    if (req.body) {
+        if (Array.isArray(req.body)) {
+            suppliers = req.body.map((supplier) => {
                 return {
                     supplierId: supplier.supplierId,
                     name: supplier.name,
+                    url: generalConfig.encryptData(supplier.url),
                     endpoint: generalConfig.encryptData(supplier.endpoint),
                     method: supplier.method,
                     code: generalConfig.encryptData(supplier.code),
@@ -158,57 +160,103 @@ const createSupApi = async (req, res, next) => {
                     body: generalConfig.encryptData(supplier.body),
                     createdBy: userId,
                     status: 1,
-                }
+                };
             });
+        } else {
+            const supplier = req.body;
+            suppliers.push({
+                supplierId: supplier.supplierId,
+                name: supplier.name,
+                url: generalConfig.encryptData(supplier.url),
+                endpoint: generalConfig.encryptData(supplier.endpoint),
+                method: supplier.method,
+                code: generalConfig.encryptData(supplier.code),
+                user: generalConfig.encryptData(supplier.user),
+                password: generalConfig.encryptData(supplier.password),
+                body: generalConfig.encryptData(supplier.body),
+                createdBy: userId,
+                status: 1,
+            });
+        }
+    }
 
-
-        try {
-            await supplierApiModel.bulkCreate(suppliers).then(data => {
+    try {
+        await supplierApiModel
+            .bulkCreate(suppliers)
+            .then((data) => {
                 res.status(201).send({ data: data, message: 'Supplier API Created successfully' });
             })
-                .catch(err => {
-                    res.status(500).send({
-                        data: null,
-                        message:
-                            err.message =
-                            "Validation Error" ? "The Email is Already Exist" : "Some error occurred while creating the Users."
-                    });
-                    console.log(err)
+            .catch((err) => {
+                res.status(500).send({
+                    data: null,
+                    message: err.message === 'Validation Error' ? 'The Email is Already Exist' : 'Some error occurred while creating the Users.',
                 });
-        } catch (error) {
-            return [false, 'Unable to sign up, Please try again later', error];
-        }
-
+                console.log(err);
+            });
+    } catch (error) {
+        return [false, 'Unable to sign up, Please try again later', error];
     }
 }
 
 const update = async (req, res) => {
-    const id = req.params.id;
     // Extract userId from JWT token
     const userId = req.user.id;
-    if (req.body && Array.isArray(req.body)) {
-        const currencies = req.body.map(
-            response => {
-                return {
-                    cityId: response.cityId,
-                    supplierManId: response.supplierManId,
-                    phoneFirst: response.phoneFirst,
-                    phoneSecond: response.phoneSecond,
-                    status: response.status,
-                    updatedBy: userId,
-                }
-            });
-        const updatedData = await msCurrencyModel.update(currencies, { where: { id: id } });
 
-        if (updatedData[0] > 0) {
-            res.status(200).send({ message: 'Success Updated the data.', data: updatedData });
+    const id = req.params.id; // Assuming the ID to update is in the route parameter
+
+    let suppliers = [];
+
+    if (req.body) {
+        if (Array.isArray(req.body)) {
+            // Handle array payload
+            suppliers = req.body.map((supplier) => ({
+                supplierId: supplier.supplierId,
+                name: supplier.name,
+                url: generalConfig.encryptData(supplier.url),
+                endpoint: generalConfig.encryptData(supplier.endpoint),
+                method: supplier.method,
+                code: generalConfig.encryptData(supplier.code),
+                user: generalConfig.encryptData(supplier.user),
+                password: generalConfig.encryptData(supplier.password),
+                body: generalConfig.encryptData(supplier.body),
+                createdBy: userId,
+                status: 1,
+            }));
         } else {
-            res.status(404).send({ message: 'Could not update the data.' });
+            // Handle single object payload
+            const supplier = req.body;
+            suppliers.push({
+                supplierId: supplier.supplierId,
+                name: supplier.name,
+                url: generalConfig.encryptData(supplier.url),
+                endpoint: generalConfig.encryptData(supplier.endpoint),
+                method: supplier.method,
+                code: generalConfig.encryptData(supplier.code),
+                user: generalConfig.encryptData(supplier.user),
+                password: generalConfig.encryptData(supplier.password),
+                body: generalConfig.encryptData(supplier.body),
+                createdBy: userId,
+                status: 1,
+            });
+        }
+        
+        try {
+            const updatedData = await supplierApiModel.update(suppliers[0], {
+                where: { id },
+            });
+            
+            if (updatedData[0] > 0) {
+                res.status(200).send({ message: 'Data updated successfully', data: updatedData });
+            } else {
+                res.status(404).send({ message: 'Data not found or could not be updated' });
+            }
+        } catch (error) {
+            res.status(500).send({ message: 'Internal Server Error', error: error.message });
         }
     } else {
-        res.status(500).send({ message: 'Bad Request Check Your Request' });
+        res.status(400).send({ message: 'Bad Request: Invalid Payload' });
     }
-}
+};
 
 const destroy = async (req, res) => {
     try {

@@ -9,17 +9,41 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true
         },
-        countryCode: {
-            type: DataTypes.STRING,
-            allowNull: false,
+        countryId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'mapping_country',
+                key: 'id',
+            }
         },
-        cityCode: {
-            type: DataTypes.STRING,
-            allowNull: false,
+        cityId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'mapping_city',
+                key: 'id',
+            }
         },
-        locationCode: {
+        continent: {
+            type: DataTypes.STRING(25),
+            allowNull: true,
+        },
+        address: {
+            type: DataTypes.TEXT,
+        },
+        zipCode: {
+            type: DataTypes.STRING(8),
+        },
+        latitude: {
+            type: DataTypes.FLOAT,
+        },
+        longitude: {
+            type: DataTypes.FLOAT,
+        },
+        continent: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         code: {
             type: DataTypes.STRING(10),
@@ -27,12 +51,18 @@ module.exports = (sequelize, DataTypes) => {
         },
         name: {
             type: DataTypes.STRING(64),
-        },
+        },    
         checkInTime: {
             type: DataTypes.STRING,
         },
         checkOutTime: {
             type: DataTypes.STRING,
+        },
+        shortDescription: {
+            type: DataTypes.TEXT,
+        },
+        longDescription: {
+            type: DataTypes.TEXT,
         },
         extra: {
             type: DataTypes.TEXT,
@@ -50,30 +80,17 @@ module.exports = (sequelize, DataTypes) => {
         youtube: {
             type: DataTypes.STRING(128),
             allowNull: true,
-        },
-        address: {
-            type: DataTypes.TEXT,
-        },
-        zipCode: {
-            type: DataTypes.STRING(8),
-        },
-        latitude: {
-            type: DataTypes.FLOAT,
-        },
-        longitude: {
-            type: DataTypes.FLOAT,
-        },
+        },       
         star: {
             type: DataTypes.STRING,
         },
         totalRoom: {
             type: DataTypes.INTEGER,
         },
-        internalRemark: {
-            type: DataTypes.TEXT,
-        },
         status: {
             type: DataTypes.STRING,
+            enum: ['0', '1', '2', '3'],
+            default: '0',
         },
         createdBy: {
             type: DataTypes.INTEGER,
@@ -86,6 +103,11 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         freezeTableName: true
     })
+
+    masterHotel.associate = (models) => {        
+        masterHotel.belongsTo(models.mappingCountry, { foreignKey: 'countryId' });
+        masterHotel.belongsTo(models.mappingCity, { foreignKey: 'cityId' });
+    };
 
     return masterHotel;
 

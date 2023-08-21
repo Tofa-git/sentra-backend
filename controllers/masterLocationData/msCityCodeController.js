@@ -5,6 +5,7 @@ const db = require('../../config/sequelize');
 const { responseSuccess, responseError } = require('../../utils/response');
 const { paginattionGenerator } = require('../../utils/pagination');
 const msCityCodeModel = db.cityCode;
+const msCountryCodeModel = db.countryCode;
 
 const create = async (req, res) => {
     try {
@@ -14,9 +15,7 @@ const create = async (req, res) => {
             name: req.body.name,
             code: req.body.code,
             long_name: req.body.longName,
-            short_name: req.body.shortName,
-            latitude: req.body.latitude,
-            longitude: req.body.longitude,
+            short_name: req.body.shortName,           
             status: 1,
             createdBy: req.user.id,
         })
@@ -29,7 +28,7 @@ const create = async (req, res) => {
 
 const list = async (req, res) => {
     try {
-        const query = await msCityCodeModel.findAndCountAll({
+        const data = await msCityCodeModel.findAndCountAll({
             attributes: [
                 'id',
                 'countryId',
@@ -49,12 +48,32 @@ const list = async (req, res) => {
                         },
                     },
                 ]
-            }
+            },
+            order: [
+                ['short_name', 'ASC'], // Sort by short_name in ascending order
+            ],
         });
 
-        const data = paginattionGenerator(req, query);
+        // const data = paginattionGenerator(req, query);
+        const responseData = await Promise.all(
+            data.rows.map(async (entry) => {
+                const countryData = await msCountryCodeModel.findOne({
+                    where: { id: entry.countryId },
+                    attributes: ['id', 'isoId', 'name', 'status'],
+                });
+            
+                return {
+                    ...entry.toJSON(),
+                    country: countryData,
+                };
+            })
+        );
 
-        res.status(200).send(responseSuccess('Success', data));
+        const result = paginattionGenerator(req, {
+            count: data.count,
+            rows: responseData,
+        });
+        res.status(200).send(responseSuccess('Data found.', result));
     } catch (error) {
         res.status(500).send(responseError(error))
     }

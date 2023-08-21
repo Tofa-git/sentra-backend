@@ -95,6 +95,9 @@ db.bookingGuest = require('../models/transaction/bookingGuestModel')(sequelize,D
 
 // Mapping
 db.mappingCountry = require('../models/mapping/country.js')(sequelize, DataTypes);
+db.mappingCity = require('../models/mapping/city.js')(sequelize, DataTypes);
+db.mappingHotel = require('../models/mapping/hotel.js')(sequelize, DataTypes);
+
 // Testing
 db.products = require('../models/producteModel')(sequelize, DataTypes);
 // db.reviews = require('./reviewModel.js')(sequelize, DataTypes)

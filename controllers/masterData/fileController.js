@@ -23,8 +23,7 @@ const create = async (req, res) => {
             const directory = path.dirname('./public' + url);
 
             // Create the directory if it doesn't exist
-            if (!fs.existsSync(directory)) {
-                console.log(directory)
+            if (!fs.existsSync(directory)) {                
                 fs.mkdirSync(directory, { recursive: true });
             }
 
@@ -32,8 +31,7 @@ const create = async (req, res) => {
             // to convert base64 format into random filename
             const base64Data = v.replace(/^data:([A-Za-z-+/]+);base64,/, '');
 
-            fs.writeFileSync('./public' + url, base64Data, { encoding: 'base64' });
-            console.log(__dirname)
+            fs.writeFileSync('./public' + url, base64Data, { encoding: 'base64' });            
 
             creates.push({
                 url,

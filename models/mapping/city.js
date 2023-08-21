@@ -1,7 +1,7 @@
 "use strict"
 
 module.exports = (sequelize, DataTypes) => {
-    let supplierApi = sequelize.define('supplier_api', {
+    let mappingCity = sequelize.define('mapping_city', {
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -17,38 +17,30 @@ module.exports = (sequelize, DataTypes) => {
                 key: 'id',
             }
         },
+        masterId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'city_code',
+                key: 'id',
+            }
+        },
+        countryId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'country_code',
+                key: 'id',
+            }
+        },
+        code: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
         name: {
             type: DataTypes.STRING,
             allowNull: false,
-        },  
-        url: {
-            type: DataTypes.STRING,
-            allowNull: true,
-        },  
-        endpoint: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },  
-        method: {
-            type: DataTypes.STRING,
-            allowNull: true,
-        },  
-        code: {
-            type: DataTypes.STRING,
-            allowNull: true,
-        },       
-        user: {
-            type: DataTypes.STRING,
-            allowNull: false,            
-        },
-        password: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        body: {
-            type: DataTypes.TEXT,
-            allowNull: false,
-        },
+        },        
         status: {
             type: DataTypes.STRING,
             enum: ['0', '1', '2', '3'],
@@ -64,17 +56,16 @@ module.exports = (sequelize, DataTypes) => {
         },
     }, {
         freezeTableName: true,
-        // timestamps: false,
-        // createdAt: false,
-        // updatedAt: false,
         classMethods: {
 
         }
     })
 
-    supplierApi.associate = (models) => {
-        supplierApi.belongsTo(models.supplier, { foreignKey: 'supplierId' });
+    mappingCity.associate = (models) => {
+        mappingCity.belongsTo(models.supplier, { foreignKey: 'supplierId' });
+        mappingCity.belongsTo(models.cityCode, { foreignKey: 'masterId' });
+        mappingCity.belongsTo(models.countryCode, { foreignKey: 'countryId' });
     };
 
-    return supplierApi;
+    return mappingCity;
 }

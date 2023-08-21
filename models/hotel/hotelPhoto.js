@@ -11,17 +11,18 @@ module.exports = (sequelize, DataTypes) => {
         },
         hotelId: {
             type: DataTypes.INTEGER,
-            allowNull: false,
-            require: true
+            allowNull: true,
+            references: {
+                model: 'ms_hotels',
+                key: 'id',
+            }
         },
-        fileId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            require: true
+        url: {
+            type: DataTypes.STRING,
         },
-        isMain: {
-            type: DataTypes.BOOLEAN,
-            default: 0,
+        type: {
+            type: DataTypes.STRING,
+            default: 'photo',
         },
         createdBy: {
             type: DataTypes.INTEGER,
@@ -35,6 +36,9 @@ module.exports = (sequelize, DataTypes) => {
         freezeTableName: true
     })
 
+    model.associate = (models) => {        
+        model.belongsTo(models.msHotels, { foreignKey: 'hotelId' });
+    };
     return model;
 
 }

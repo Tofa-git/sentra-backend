@@ -6,13 +6,15 @@ const { responseSuccess, responseError } = require('../../utils/response');
 const { paginattionGenerator } = require('../../utils/pagination');
 const hotelModel = db.masterHotel;
 const hotelPhotoModel = db.hotelPhoto;
+const cityDataModel = db.cityCode;
+const countryDataModel = db.countryCode;
 
 const create = async (req, res) => {
     try {
         const hotel = await hotelModel.create({
-            countryCode: req.body.countryCode,
-            cityCode: req.body.cityCode,
-            locationCode: req.body.locationCode,
+            countryId: req.body.countryId,
+            cityId: req.body.cityId,
+            continent: req.body.continent,            
             name: req.body.name,
             code: req.body.name,
             email: req.body.email,
@@ -41,27 +43,32 @@ const create = async (req, res) => {
 
 const list = async (req, res) => {
     try {
-        const query = await hotelModel.findAndCountAll({
+        const data = await hotelModel.findAndCountAll({
             attributes: [
-                'countryCode',
-                'cityCode',
-                'locationCode',
-                'name',
+                'id',                
+                'countryId',
+                'cityId', 
                 'code',
-                'email',
-                'phone',
-                'website',
+                'name',
+                'status',                                
+                'continent',
                 'address',
                 'zipCode',
                 'latitude',
                 'longitude',
                 'checkInTime',
                 'checkOutTime',
+                'shortDescription',
+                'longDescription',
                 'extra',
+                'email',
+                'phone',
+                'website',
+                'youtube',
                 'star',
                 'totalRoom',
-                'status',
                 'createdBy',
+                'updatedBy',
             ],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
@@ -81,9 +88,36 @@ const list = async (req, res) => {
             }
         });
 
-        const data = paginattionGenerator(req, query);
+       
 
-        res.status(200).send(responseSuccess('Success', data));
+         // Retrieve the suppman data for each entry
+         const responseData = await Promise.all(
+            data.rows.map(async (entry) => {
+                
+                const masterCountry = await countryDataModel.findOne({
+                    where: { id: entry.countryId },
+                    attributes: ['id', 'isoId', 'iso3', 'name','basicCurrency','descCurrency', 'status'],
+                });
+        
+                const masterCity = await cityDataModel.findOne({
+                    where: { id: entry.cityId },
+                    attributes: ['id', 'code', 'long_name','short_name', 'status'],
+                });
+             
+                return {
+                    ...entry.toJSON(),                  
+                    country: masterCountry,
+                    city: masterCity,
+                };
+            })
+        );
+
+        const result = paginattionGenerator(req, {
+            count: data.count,
+            rows: responseData,
+        });
+
+        res.status(200).send(responseSuccess('Success', result));
     } catch (error) {
         res.status(500).send(responseError(error))
     }
@@ -93,9 +127,9 @@ const detail = async (req, res) => {
     try {
         const hotel = await hotelModel.findOne({
             attributes: [
-                'countryCode',
-                'cityCode',
-                'locationCode',
+                'countryId',
+                'cityId',
+                'continent',                
                 'name',
                 'code',
                 'email',
@@ -139,9 +173,9 @@ const detail = async (req, res) => {
 const update = async (req, res) => {
     try {
         await hotelModel.update({
-            countryCode: req.body.countryCode,
-            cityCode: req.body.cityCode,
-            locationCode: req.body.locationCode,
+            countryId: req.body.countryId,
+            cityId: req.body.cityId,
+            ccontinent: req.body.cityId,            
             name: req.body.name,
             code: req.body.code,
             email: req.body.email,
