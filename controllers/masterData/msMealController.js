@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 const db = require('../../config/sequelize');
 const { responseSuccess, responseError } = require('../../utils/response');
 const { paginattionGenerator } = require('../../utils/pagination');
-const breakfastModel = db.masterBreakfasts;
+const mealModel = db.masterMeals;
 const supplierModel = db.supplier;
 
 const create = async (req, res) => {
@@ -21,7 +21,7 @@ const create = async (req, res) => {
                         createdBy: userId,
                     }
                 });
-            await breakfastModel.bulkCreate(datas).then(data => {
+            await mealModel.bulkCreate(datas).then(data => {
                 res.status(201).send({ data: data, message: 'Data created successfully' });
             })
                 .catch(err => {
@@ -33,7 +33,7 @@ const create = async (req, res) => {
                     });
                 });
         } else {
-            await breakfastModel.create({
+            await mealModel.create({
                 name: req.body.name,
                 code: req.body.code,
                 status: 1,
@@ -52,7 +52,7 @@ const create = async (req, res) => {
 
 const list = async (req, res) => {
     try {
-        const data = await breakfastModel.findAndCountAll({
+        const data = await mealModel.findAndCountAll({
             attributes: [
                 'id',
                 'supplierId',
@@ -83,10 +83,10 @@ const list = async (req, res) => {
                 const supplier = await supplierModel.findOne({
                     where: { id: entry.supplierId },
                     attributes: ['id', 'code', 'name', 'creditDay', 'status'],
-                });                
+                });
 
                 return {
-                    ...entry.toJSON(),                    
+                    ...entry.toJSON(),
                     supplier: supplier,
                 };
             })
@@ -104,7 +104,7 @@ const list = async (req, res) => {
 
 const detail = async (req, res) => {
     try {
-        const data = await breakfastModel.findOne({
+        const data = await mealModel.findOne({
             attributes: [
                 'id',
                 'supplierId',
@@ -124,7 +124,7 @@ const detail = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        await breakfastModel.update({
+        await mealModel.update({
             name: req.body.name,
             code: req.body.code,
             updatedBy: req.user.id,
@@ -138,7 +138,7 @@ const update = async (req, res) => {
 
 const destroy = async (req, res) => {
     try {
-        await breakfastModel.destroy({ where: { id: req.params.id } });
+        await mealModel.destroy({ where: { id: req.params.id } });
 
         res.status(201).send(responseSuccess('Data deleted successfully'));
     } catch (error) {
@@ -148,7 +148,7 @@ const destroy = async (req, res) => {
 
 const listDropdown = async (req, res) => {
     try {
-        const data = await breakfastModel.findAll({
+        const data = await mealModel.findAll({
             attributes: [
                 'id',
                 'name',

@@ -205,7 +205,7 @@ const update = async (req, res) => {
     const id = req.params.id; // Assuming the ID to update is in the route parameter
 
     let suppliers = [];
-
+    console.log(req.body)
     if (req.body) {
         if (Array.isArray(req.body)) {
             // Handle array payload

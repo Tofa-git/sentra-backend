@@ -1,7 +1,7 @@
 "use strict"
 
 module.exports = (sequelize, DataTypes) => {
-    const masterBreakfast = sequelize.define('ms_breakfasts', {
+    const masterMeal = sequelize.define('ms_meals', {
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -40,10 +40,10 @@ module.exports = (sequelize, DataTypes) => {
         freezeTableName: true
     })
 
-    masterBreakfast.associate = (models) => {
-        masterBreakfast.belongsTo(models.supplier, { foreignKey: 'supplierId' });
+    masterMeal.associate = (models) => {
+        masterMeal.belongsTo(models.supplier, { foreignKey: 'supplierId' });
     };
 
-    return masterBreakfast;
+    return masterMeal;
 
 }

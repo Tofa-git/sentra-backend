@@ -58,6 +58,8 @@ db.supplierApi = require('../models/supplier/supplierApi.js')(sequelize, DataTyp
 
 //#region Master Data
 db.masterBreakfasts = require('../models/masterData/masterBreakfastModel')(sequelize, DataTypes);
+db.masterMeals = require('../models/masterData/masterMealModel')(sequelize, DataTypes);
+db.masterBedType = require('../models/masterData/masterBedTypeModel')(sequelize, DataTypes);
 db.masterChargeTypes = require('../models/masterData/masterChargeTypeModel')(sequelize, DataTypes);
 db.masterCurrency = require('../models/masterData/masterCurrencyModel')(sequelize, DataTypes);
 db.masterFacility = require('../models/masterData/masterFacilitesModel')(sequelize, DataTypes);
@@ -81,9 +83,11 @@ db.countryGroup = require('../models/masterData/locationData/countryGroup')(sequ
 // Hotel
 db.hotelExtra = require('../models/hotel/hotelExtra')(sequelize, DataTypes);
 db.hotelFacility = require('../models/hotel/hotelFacilities')(sequelize, DataTypes);
+db.hotelRoom = require('../models/hotel/hotelRoom.js')(sequelize, DataTypes);
 db.hotelRoomGrade = require('../models/hotel/hotelRoomGrade')(sequelize, DataTypes);
 db.hotelSupplier = require('../models/hotel/hotelSupplier')(sequelize, DataTypes);
 db.hotelPhoto = require('../models/hotel/hotelPhoto')(sequelize, DataTypes);
+db.roomPhoto = require('../models/hotel/roomPhoto.js')(sequelize, DataTypes);
 
 // Log
 db.logActivity = require('../models/log/logActivitiesModel')(sequelize, DataTypes);

@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 const db = require('../../config/sequelize');
 const { responseSuccess, responseError } = require('../../utils/response');
 const { paginattionGenerator } = require('../../utils/pagination');
-const breakfastModel = db.masterBreakfasts;
+const bedTypeModel = db.masterBedType;
 const supplierModel = db.supplier;
 
 const create = async (req, res) => {
@@ -15,13 +15,14 @@ const create = async (req, res) => {
                 data => {
                     return {
                         supplierId: data.supplierId ?? "",
+                        occupancy: data.occupancy ?? "",
                         code: data.code ?? "",
                         name: data.name ?? "",
                         status: 1,
                         createdBy: userId,
                     }
                 });
-            await breakfastModel.bulkCreate(datas).then(data => {
+            await bedTypeModel.bulkCreate(datas).then(data => {
                 res.status(201).send({ data: data, message: 'Data created successfully' });
             })
                 .catch(err => {
@@ -33,7 +34,8 @@ const create = async (req, res) => {
                     });
                 });
         } else {
-            await breakfastModel.create({
+            await bedTypeModel.create({
+                occupancy: req.body.occupancy,
                 name: req.body.name,
                 code: req.body.code,
                 status: 1,
@@ -52,10 +54,11 @@ const create = async (req, res) => {
 
 const list = async (req, res) => {
     try {
-        const data = await breakfastModel.findAndCountAll({
+        const data = await bedTypeModel.findAndCountAll({
             attributes: [
                 'id',
                 'supplierId',
+                'occupancy',
                 'name',
                 'code',
             ],
@@ -83,10 +86,10 @@ const list = async (req, res) => {
                 const supplier = await supplierModel.findOne({
                     where: { id: entry.supplierId },
                     attributes: ['id', 'code', 'name', 'creditDay', 'status'],
-                });                
+                });
 
                 return {
-                    ...entry.toJSON(),                    
+                    ...entry.toJSON(),
                     supplier: supplier,
                 };
             })
@@ -104,10 +107,11 @@ const list = async (req, res) => {
 
 const detail = async (req, res) => {
     try {
-        const data = await breakfastModel.findOne({
+        const data = await bedTypeModel.findOne({
             attributes: [
                 'id',
                 'supplierId',
+                'occupancy',
                 'name',
                 'code',
             ],
@@ -124,8 +128,9 @@ const detail = async (req, res) => {
 
 const update = async (req, res) => {
     try {
-        await breakfastModel.update({
+        await bedTypeModel.update({
             name: req.body.name,
+            occupancy: req.body.occupancy,
             code: req.body.code,
             updatedBy: req.user.id,
         }, { where: { id: req.params.id } })
@@ -138,7 +143,7 @@ const update = async (req, res) => {
 
 const destroy = async (req, res) => {
     try {
-        await breakfastModel.destroy({ where: { id: req.params.id } });
+        await bedTypeModel.destroy({ where: { id: req.params.id } });
 
         res.status(201).send(responseSuccess('Data deleted successfully'));
     } catch (error) {
@@ -148,7 +153,7 @@ const destroy = async (req, res) => {
 
 const listDropdown = async (req, res) => {
     try {
-        const data = await breakfastModel.findAll({
+        const data = await bedTypeModel.findAll({
             attributes: [
                 'id',
                 'name',

@@ -38,7 +38,7 @@ const syncMappingCountry = async (req, res, next) => {
     try {
         const id = req.params?.id;
         const data = await supplierApiModel.findOne({
-            attributes: ['id', 'supplierId', 'name', 'url','endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
+            attributes: ['id', 'supplierId', 'name', 'url', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
             where: {
                 supplierId: id,
                 name: 'Country' // Add the condition where name = 'Country'
@@ -90,6 +90,12 @@ const syncMappingCountry = async (req, res, next) => {
             bodyData.Login.Password = responseData.password;
         }
 
+        if (bodyData.Header) {
+            // Replace placeholders in bodyData with actual values from responseData
+            bodyData.Header.ClientID = responseData.user;
+            bodyData.Header.LicenseKey = responseData.password;            
+        }
+        
         // Transform bodyData into the data field of the config object
         const configData = {
             ...bodyData,
@@ -97,19 +103,20 @@ const syncMappingCountry = async (req, res, next) => {
 
         // Merge the configData with the other properties of the config object
         const config = {
-            method: 'post',
+            method: `${responseData.method}`,
             url: `${responseData.supplier.urlApi}${responseData.endpoint}`,
             data: configData,
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Accept-Encoding':'gzip, deflate, br'
             }
-        };
+        };        
 
         axios(config)
-            .then(async function (response) {
-                if (response.data.nationalityTypes.nationalityType) {
+            .then(async function (response) {                
+                if (response.data.nationalityTypes != null) {
                     // const replacedResponse = replaceWordsWith(response, 'nationalityTypes', 'response');
-                    // console.log(replacedResponse)
+                    console.log(response.data.nationalityTypes)
                     const countriesArray = response.data.nationalityTypes.nationalityType;
                     const countryCodes = countriesArray.map((country) => country.code);
 
@@ -158,8 +165,57 @@ const syncMappingCountry = async (req, res, next) => {
                         updateOnDuplicate: ['name', 'code', 'masterId', 'supplierId'],
                     });
 
-                }
+                }                
+                if (response.data.Success != null) {
+                    const countriesArray = response.data.Success.Countries;
+                    const countryCodes = countriesArray.map((country) => country.ISOCountryCode);
+                    console.log(response.data.Success)
+                    // Find the existing countries in the mapping_country table with matching codes
+                    const existingCountries = await mappingCountryModel.findAll({
+                        where: {
+                            code: countryCodes,
+                            supplierId: responseData.supplierId,
+                        },
+                    });
 
+                    // Build a mapping of code to id for existing countries
+                    const codeToIdMap = {};
+                    existingCountries.forEach((existingCountry) => {
+                        codeToIdMap[existingCountry.code] = existingCountry.id;
+                    });
+
+                    const newCountryObjects = [];
+
+                    // Filter out the new countries that are not in the existing mapping_country table
+                    const newCountries = countriesArray.filter((country) => !codeToIdMap[country.ISOCountryCode]);
+
+                    // Fetch the id for new countries from the country_code table
+                    for (const country of newCountries) {
+                        const countryData = await countryDataModel.findOne({
+                            where: {
+                                isoId: country.ISOCountryCode,
+                                supplierId: responseData.supplierId,
+                            },
+                        });
+
+                        if (countryData) {
+                            // Set the masterId based on the existing country's ID from the country_code table
+                            newCountryObjects.push({
+                                supplierId: responseData.supplierId,
+                                masterId: countryData.id,
+                                name: country.CountryName,
+                                code: country.ISOCountryCode,
+                                status: '1', // Set the status accordingly
+                                createdBy: req.user.id, // Set the createdBy field to the ID of the current user
+                            });
+                        }
+                    }
+
+                    // Insert or update the data in the mapping_country table using bulkCreate with updateOnDuplicate option
+                    await mappingCountryModel.bulkCreate(newCountryObjects, {
+                        updateOnDuplicate: ['name', 'code', 'masterId', 'supplierId'],
+                    });
+                }
             })
             .catch(function (error) {
                 res.status(500).send(responseError(error));
@@ -277,6 +333,24 @@ const destroyCountry = async (req, res) => {
     }
 }
 
+const listDropdown = async (req, res) => {
+    try {
+        const data = await mappingCountryModel.findAll({
+            attributes: [
+                'id',
+                'supplierId',
+                'masterId',
+                'name',
+                'code'
+            ],
+            where: { supplierId: req.query.supplierId ?? "" },
+        });
+
+        res.status(200).send(responseSuccess('Success', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
 
 module.exports = {
     syncMappingCountry,
@@ -284,4 +358,5 @@ module.exports = {
     createCountry,
     updateCountry,
     destroyCountry,
+    listDropdown,
 }

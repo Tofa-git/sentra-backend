@@ -20,16 +20,12 @@ module.exports = (sequelize, DataTypes) => {
         masterId: {
             type: DataTypes.INTEGER,
             allowNull: true,
-            references: {
-                model: 'ms_hotels',
-                key: 'id',
-            }
         },
         countryId: {
             type: DataTypes.INTEGER,
             allowNull: true,
             references: {
-                model: 'country_code',
+                model: 'mapping_country',
                 key: 'id',
             }
         },
@@ -37,10 +33,18 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: true,
             references: {
-                model: 'city_code',
+                model: 'mapping_city',
                 key: 'id',
             }
         },
+        cityCode: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        cityName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },  
         code: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -57,6 +61,14 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false,
         },
+        latitude: {
+            type: DataTypes.DECIMAL(9, 6), // Total digits and decimal places
+            allowNull: true
+        },
+        longitude: {
+            type: DataTypes.DECIMAL(9, 6), // Total digits and decimal places
+            allowNull: true
+        },
         address: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -64,7 +76,27 @@ module.exports = (sequelize, DataTypes) => {
         zipCode: {
             type: DataTypes.STRING,
             allowNull: false,
+        },
+        chainCode: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        chainName: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        brandCode: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        brandName: {
+            type: DataTypes.STRING,
+            allowNull: true,
         },  
+        type: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        }, 
         status: {
             type: DataTypes.STRING,
             enum: ['0', '1', '2', '3'],
@@ -86,10 +118,9 @@ module.exports = (sequelize, DataTypes) => {
     })
 
     mappingHotel.associate = (models) => {
-        mappingHotel.belongsTo(models.supplier, { foreignKey: 'supplierId' });
-        mappingHotel.belongsTo(models.msHotels, { foreignKey: 'masterId' });
-        mappingHotel.belongsTo(models.countryCode, { foreignKey: 'countryId' });
-        mappingHotel.belongsTo(models.cityCode, { foreignKey: 'cityId' });
+        mappingHotel.belongsTo(models.supplier, { foreignKey: 'supplierId' });        
+        mappingHotel.belongsTo(models.mappingCountry, { foreignKey: 'countryId' });
+        mappingHotel.belongsTo(models.mappingCity, { foreignKey: 'cityId' });
     };
 
     return mappingHotel;

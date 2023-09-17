@@ -19,10 +19,19 @@ module.exports = (sequelize, DataTypes) => {
         },
         url: {
             type: DataTypes.STRING,
-        },
+        },       
         type: {
             type: DataTypes.STRING,
             default: 'photo',
+        },
+        isMain: {
+            type: DataTypes.BOOLEAN,
+            default: false,
+        },
+        status: {
+            type: DataTypes.STRING,
+            enum: ['0', '1', '2', '3'],
+            default: '0',
         },
         createdBy: {
             type: DataTypes.INTEGER,

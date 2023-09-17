@@ -5,6 +5,8 @@ const msCityCodeController = require('../controllers/masterLocationData/msCityCo
 const nationalityController = require('../controllers/masterLocationData/nationalityController');
 const cityLocationController = require('../controllers/masterLocationData/msCityLocationController');
 const msBreakfastController = require('../controllers/masterData/msBreakfastController');
+const msMealController = require('../controllers/masterData/msMealController');
+const msBedTypeController = require('../controllers/masterData/msBedTypeController');
 const msChargeController = require('../controllers/masterData/msChargeController');
 const msCurrencyController = require('../controllers/masterData/msCurrencyController');
 const msHotelController = require('../controllers/masterData/msHotelController');
@@ -67,6 +69,24 @@ router.get('/breakfast/:id', auth, msBreakfastController.detail);
 router.put('/breakfast/:id', auth, msBreakfastController.update);
 router.delete('/breakfast/:id', auth, msBreakfastController.destroy);
 router.get('/breakfast-dd/', auth, msBreakfastController.listDropdown);
+//#endregion
+
+//#region Meal Type
+router.post('/meal', auth, msMealController.create);
+router.get('/meal', auth, msMealController.list);
+router.get('/meal/:id', auth, msMealController.detail);
+router.put('/meal/:id', auth, msMealController.update);
+router.delete('/meal/:id', auth, msMealController.destroy);
+router.get('/meal-dd/', auth, msMealController.listDropdown);
+//#endregion
+
+//#region Bed Type
+router.post('/bedType', auth, msBedTypeController.create);
+router.get('/bedType', auth, msBedTypeController.list);
+router.get('/bedType/:id', auth, msBedTypeController.detail);
+router.put('/bedType/:id', auth, msBedTypeController.update);
+router.delete('/bedType/:id', auth, msBedTypeController.destroy);
+router.get('/bedType-dd/', auth, msMealController.listDropdown);
 //#endregion
 
 //#region Charge

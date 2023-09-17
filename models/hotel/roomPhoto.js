@@ -1,7 +1,7 @@
 "use strict"
 
 module.exports = (sequelize, DataTypes) => {
-    const masterBreakfast = sequelize.define('ms_breakfasts', {
+    let model = sequelize.define('room_photos', {
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -9,19 +9,32 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true
         },
-        supplierId: {
+        hotelId: {
             type: DataTypes.INTEGER,
             allowNull: true,
             references: {
-                model: 'supplier',
+                model: 'ms_hotels',
                 key: 'id',
             }
         },
-        name: {
-            type: DataTypes.STRING,
+        roomId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'hotel_rooms',
+                key: 'id',
+            }
         },
-        code: {
+        url: {
             type: DataTypes.STRING,
+        },      
+        type: {
+            type: DataTypes.STRING,
+            default: 'photo',
+        },
+        isMain: {
+            type: DataTypes.BOOLEAN,
+            default: false,
         },
         status: {
             type: DataTypes.STRING,
@@ -40,10 +53,10 @@ module.exports = (sequelize, DataTypes) => {
         freezeTableName: true
     })
 
-    masterBreakfast.associate = (models) => {
-        masterBreakfast.belongsTo(models.supplier, { foreignKey: 'supplierId' });
+    model.associate = (models) => {        
+        model.belongsTo(models.msHotels, { foreignKey: 'hotelId' });
+        model.belongsTo(models.hotelRoom, { foreignKey: 'roomId' });
     };
-
-    return masterBreakfast;
+    return model;
 
 }

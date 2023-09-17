@@ -6,6 +6,7 @@ const constants = require('../../config/constants');
 const { Op } = require('sequelize');
 const supplierModel = db.supplier;
 const mappingCityModel = db.mappingCity;
+const mappingCountry = db.mappingCountry;
 const countryDataModel = db.countryCode;
 const cityDataModel = db.cityCode;
 const supplierApiModel = db.supplierApi;
@@ -91,8 +92,18 @@ const syncMappingCity = async (req, res, next) => {
             bodyData.Login.Password = responseData.password;
         }
 
-        if (bodyData.Continent) {            
-            bodyData.Continent = req.body?.Continent ?? "";            
+        if (bodyData.Continent) {
+            bodyData.Continent = req.body?.Continent ?? "";
+        }
+
+        if (bodyData.CountryCode) {
+            // Replace placeholders in bodyData with actual values from responseData
+            bodyData.Header.ClientID = responseData.user;
+            bodyData.Header.LicenseKey = responseData.password;
+        }
+
+        if (bodyData.CountryCode) {
+            bodyData.CountryCode = req.body?.CountryCode ?? "";
         }
 
         // Transform bodyData into the data field of the config object
@@ -103,19 +114,21 @@ const syncMappingCity = async (req, res, next) => {
         const url = responseData.url.length > 0 ? responseData.url : responseData.supplier.urlApi;
         // Merge the configData with the other properties of the config object
         const config = {
-            method: 'post',
+            method: `${responseData.method}`,
             url: `${url}${responseData.endpoint}`,
             data: configData,
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Accept-Encoding': 'gzip, deflate, br'
             }
         };
-        console.log(config)
+
         axios(config)
             .then(async function (response) {
                 const continents = response.data.continents?.continent ?? [];
+                const citiesArray = response.data.Success.Cities ?? [];
                 const newCityObjects = [];
-                console.log(response.data)
+
                 for (const continent of continents) {
                     const countries = continent.countries?.country ?? [];
 
@@ -148,10 +161,9 @@ const syncMappingCity = async (req, res, next) => {
 
                                 const existingCity = await cityDataModel.findOne({
                                     where: {
-                                        [Op.or]: [
+                                        [Op.and]: [
                                             { countryId: countryData.id },
                                             { code: city.code },
-                                            { long_name: city.name + "," + country.name },
                                             { short_name: city.name },
                                         ],
                                     },
@@ -176,6 +188,61 @@ const syncMappingCity = async (req, res, next) => {
                             }
                         }
 
+                    }
+                }
+
+                for (const city of citiesArray) {
+                    const countryData = await countryDataModel.findOne({
+                        where: {
+                            isoId: city.CountryCode,
+                        },
+                    });
+
+                    if (countryData) {
+                        const cityName = city.CityName.replace(/ \(and vicinity\)/, ''); // Remove "(and vicinity)"
+                        const cityData = await cityDataModel.findOne({
+                            where: {
+                                short_name: cityName,
+                            },
+                        });
+
+                        if (cityData) {
+                            newCityObjects.push({
+                                supplierId: responseData.supplierId,
+                                masterId: cityData.id,
+                                countryId: countryData.id,
+                                name: city.CityName,
+                                code: city.CityCode,
+                                status: '1',
+                                createdBy: req.user.id,
+                            });
+                        }
+
+                        const existingCity = await cityDataModel.findOne({
+                            where: {
+                                [Op.or]: [
+                                    { countryId: countryData.id },
+                                    { code: city.CityCode },
+                                    { long_name: city.CityLongName + ', ' + countryData.name },
+                                    { short_name: city.CityName },
+                                ],
+                            },
+                        });
+
+                        if (!existingCity) {
+                            await cityDataModel.create({
+                                countryId: countryData.id,
+                                sequence: 9999,
+                                code: city.CityCode,
+                                long_name: city.CityLongName + ', ' + countryData.name,
+                                short_name: city.CityName,
+                                status: 1,
+                                createdBy: req.user.id,
+                            });
+                        } else {
+                            console.log('City with the same code, long_name, or short_name already exists');
+                            // Handle the case when the city already exists (e.g., show a message or log)
+                        }
                     }
                 }
 
@@ -229,10 +296,10 @@ const showMappingCity = async (req, res, next) => {
             limit: req.query.limit ? +req.query.limit : 10,
             where: {
                 supplierId: req.body.supplierId,
-                [Op.and]: [
+                [Op.or]: [
                     {
                         code: {
-                            [Op.like]: ['%' + (req.query.code ?? '') + '%'],
+                            [Op.like]: ['%' + (req.query.name ?? '') + '%'],
                         },
                     },
                     {
@@ -347,6 +414,46 @@ const destroyCity = async (req, res) => {
     }
 }
 
+const listDropdown = async (req, res) => {
+    try {
+        const country = await mappingCountry.findOne({
+            attributes: [
+                'id',
+                'supplierId',                
+                'masterId',
+                'name',
+                'code'
+            ],
+            where: {
+                supplierId: req.query.supplierId ?? "",
+                id: req.query.countryId ?? "",
+            },
+        });
+        
+        const data = await mappingCityModel.findAll({
+            attributes: [
+                'id',
+                'supplierId',
+                'countryId',
+                'masterId',
+                'name',
+                'code'
+            ],
+            where: {
+                supplierId: req.query.supplierId ?? "",
+                countryId: country.masterId ?? "",
+            },
+            order: [
+                ['name', 'ASC'], // Sort by short_name in ascending order
+            ],
+        });
+
+        res.status(200).send(responseSuccess('Success', data));
+    } catch (error) {
+        res.status(500).send(responseError(error))
+    }
+}
+
 
 module.exports = {
     syncMappingCity,
@@ -354,4 +461,5 @@ module.exports = {
     createCity,
     updateCity,
     destroyCity,
+    listDropdown
 }

@@ -29,6 +29,7 @@ const getSuppliers = async (req, res) => {
                 'ccEmail',
                 'address',
                 'url',
+                'urlApi',
                 'remark',
                 'creditDay',
                 'exchangeRate',

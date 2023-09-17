@@ -36,10 +36,12 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING(8),
         },
         latitude: {
-            type: DataTypes.FLOAT,
+            type: DataTypes.DECIMAL(9, 6), // Total digits and decimal places
+            allowNull: true
         },
         longitude: {
-            type: DataTypes.FLOAT,
+            type: DataTypes.DECIMAL(9, 6), // Total digits and decimal places
+            allowNull: true
         },
         continent: {
             type: DataTypes.STRING,
@@ -68,13 +70,13 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
         },
         email: {
-            type: DataTypes.STRING(64),
+            type: DataTypes.STRING(255),
         },
         phone: {
             type: DataTypes.STRING(32),
         },
         website: {
-            type: DataTypes.STRING(128),
+            type: DataTypes.STRING(150),
             allowNull: true,
         },
         youtube: {
@@ -87,6 +89,26 @@ module.exports = (sequelize, DataTypes) => {
         totalRoom: {
             type: DataTypes.INTEGER,
         },
+        chainCode: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        chainName: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        brandCode: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        brandName: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        }, 
+        type: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        }, 
         status: {
             type: DataTypes.STRING,
             enum: ['0', '1', '2', '3'],
