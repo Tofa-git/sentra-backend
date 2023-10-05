@@ -136,7 +136,7 @@ const searchHotels = async (req, res) => {
                     bodyData.Rooms.Room.push(
                         {
                             "RoomNo": req.body.roomNo,
-                            "NoOfAdults": req.body.adults,
+                            "NoOfAdults": req.body.adult,
                             "NoOfChild": "",
                             "Child1Age": "",
                             "Child2Age": "",
@@ -432,6 +432,7 @@ const roomDidaHotels = async (req, res) => {
         axios(config)
             .then(async function (data) {
 
+
                 if (data.data.Success) {
                     let rooms = data?.data?.Success?.PriceDetails?.HotelList[0].RatePlanList;
                     await Promise.all(rooms.map(async room => {
@@ -452,7 +453,7 @@ const roomDidaHotels = async (req, res) => {
                             })
                         })
 
-                        console.log(room)
+
                         newRoomObjects.push({
                             code: room?.RoomTypeID ?? "-",
                             name: room?.RoomName ?? room?.RatePlanName,
@@ -469,6 +470,7 @@ const roomDidaHotels = async (req, res) => {
                             avgNightPrice: room.TotalPrice,
                             b2BMarkup: 0,
                             packageRate: false,
+
                             cancellationPolicies: {
                                 policy: policy
                             },
@@ -491,15 +493,15 @@ const roomDidaHotels = async (req, res) => {
                                                 "nightlyRate": [
                                                     {
                                                         "srNo": 1,
-                                                        "netPrice": 500001.01,
-                                                        "grossPrice": 500001.01,
+                                                        "netPrice": room.TotalPrice,
+                                                        "grossPrice": room.TotalPrice,
                                                         "b2BMarkup": 0,
                                                         "supplementaryDetails": {
                                                             "supplement": [
                                                                 {
                                                                     "code": "SUPPATBOOK",
                                                                     "name": "SUPP",
-                                                                    "amount": 300000,
+                                                                    "amount": room.TotalPrice,
                                                                     "description": ""
                                                                 }
                                                             ]
@@ -660,7 +662,7 @@ const recheckHotels = async (req, res) => {
                 bodyData.Rooms.Room.push(
                     {
                         "RoomNo": req.body.roomNo,
-                        "NoOfAdults": req.body.adults,
+                        "NoOfAdults": req.body.adult,
                         "NoOfChild": "",
                         "Child1Age": "",
                         "Child2Age": "",
@@ -709,63 +711,16 @@ const recheckHotels = async (req, res) => {
         };
 
 
-        // const config = {
-        //     method: 'post',
-        //     url: `${process.env.JARVIS_URL}Hotel/RecheckHotel`,
-        //     data: {
-        //         "Login": {
-        //             "AgencyCode": process.env.JARVIS_AGENCY_CODE,
-        //             "Username": process.env.JARVIS_USER,
-        //             "Password": process.env.JARVIS_PASS,
-        //         },
-        //         "SessionID": req.body.sessionId,
-        //         "Nationality": req.body.nationality,
-        //         "Country": mappingCountryData.code,
-        //         "City": mappingCityData.code,
-        //         "CheckIn": req.body.checkIn,
-        //         "CheckOut": req.body.checkOut,
-        //         "HotelCode": req.body.hotelCode,
-        //         "RoomDetails": {
-        //             "Code": req.body.roomCode,
-        //             "MealPlan": req.body.mealPlan,
-        //             "CancellationPolicyType": req.body.cancelPolicyType,
-        //             "PackageRate": false
-        //         },
-        //         "Rooms": {
-        //             "Room": [
-        //                 {
-        //                     "RoomNo": req.body.roomNo,
-        //                     "NoOfAdults": 2,
-        //                     "NoOfChild": req.body.children,
-        //                     "Child1Age": req.body.child1Age,
-        //                     "Child2Age": req.body.child2Age,
-        //                     "ExtraBed": false,
-        //                     "RateKey": req.body.rateKey
-        //                 }
-        //             ]
-        //         },
-        //         "Currency": "IDR",
-        //         "Language": "EN",
-        //         "AvailFlag": true,
-        //         "DetailLevel": "FULL"
-        //     },
-        //     headers: {
-        //         'Accept': 'application/json'
-        //     }
-        // };
-
-        console.log(config)
-
         axios(config)
             .then(async function (data) {
-
+                console.log(data.data)
                 if (data.data.status) {
                     res.status(200).send(responseSuccess('successfully recheck', data?.data?.hotels?.hotel))
                 } else if (data.data.Success) {
-                    console.log(data.data.Success.PriceDetails)
+                    console.log(data.data.Success)
                     let hotelData = data?.data?.Success?.PriceDetails?.HotelList[0];
                     let rooms = hotelData.RatePlanList;
-                    
+
                     await Promise.all(rooms.map(async room => {
                         const policy = [];
 
@@ -785,12 +740,12 @@ const recheckHotels = async (req, res) => {
                         })
 
                         recheckObjects = {
-                            code:hotelData.HotelID,
-                            name:req.body.hotelName,
-                            latitude:0,
-                            longitude:0,
-                            rating:0,
-                            referenceNo:data?.data?.Success?.PriceDetails?.ReferenceNo,
+                            code: hotelData.HotelID,
+                            name: req.body.hotelName,
+                            latitude: 0,
+                            longitude: 0,
+                            rating: 0,
+                            sessionId: data?.data?.Success?.PriceDetails?.ReferenceNo,
                             roomDetails: {
                                 code: room?.RoomTypeID ?? "-",
                                 name: room?.RoomName ?? room?.RatePlanName,
@@ -830,15 +785,15 @@ const recheckHotels = async (req, res) => {
                                                 "nightlyRate": [
                                                     {
                                                         "srNo": 1,
-                                                        "netPrice": 500001.01,
-                                                        "grossPrice": 500001.01,
+                                                        "netPrice": room.TotalPrice,
+                                                        "grossPrice": room.TotalPrice,
                                                         "b2BMarkup": 0,
                                                         "supplementaryDetails": {
                                                             "supplement": [
                                                                 {
                                                                     "code": "SUPPATBOOK",
                                                                     "name": "SUPP",
-                                                                    "amount": 300000,
+                                                                    "amount": room.TotalPrice,
                                                                     "description": ""
                                                                 }
                                                             ]
@@ -881,65 +836,186 @@ const recheckHotels = async (req, res) => {
             });
 
     } catch (error) {
+        if (data.data.Error) {
+            res.status(500).send(responseError(data.data.Error.Message))
+        }
         res.status(500).send(responseError(error))
     }
 }
 
 const bookingHotels = async (req, res) => {
     try {
-        const config = {
-            method: 'post',
-            url: `${process.env.JARVIS_URL}Hotel/BookHotel`,
-            data: {
-                "Login": {
-                    "AgencyCode": process.env.JARVIS_AGENCY_CODE,
-                    "Username": process.env.JARVIS_USER,
-                    "Password": process.env.JARVIS_PASS,
-                },
-                "SessionID": req.body.sessionId,
-                "AgencyBookingID": crypto.randomBytes(16).toString("hex"),
-                "Nationality": req.body.nationality,
-                "CheckIn": req.body.checkIn,
-                "CheckOut": req.body.checkOut,
-                "HotelCode": req.body.hotelCode,
-                "RoomDetails": {
-                    "Code": req.body.roomCode,
-                    "MealPlan": req.body.mealPlan,
-                    "CancellationPolicyType": req.body.cancelPolicyType,
-                    "PackageRate": false
-                },
-                "Rooms": {
-                    "Room": [
-                        {
-                            "PaxDetails": {
-                                "Pax": req.body.guests
-                            },
-                            "RoomNo": req.body.roomNo,
-                            "NoOfAdults": req.body.adults,
-                            "NoOfChild": req.body.children,
-                            "ExtraBed": false,
-                            "RateKey": req.body.rateKey
-                        }
-                    ]
-                },
-                "Currency": "IDR",
-                "Language": "ID",
-                "AvailFlag": true,
-                "OnHold": false,
-                "SpecialReq": "",
-                "DetailLevel": "FULL"
+        let bookingObjects = {};
+
+        const data = await supplierApiModel.findOne({
+            attributes: ['id', 'supplierId', 'name', 'url', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
+            where: {
+                supplierId: req.body.supplierId,
+                name: 'Book'
             },
+        });
+
+        if (!data || data.length === 0) {
+            return res.status(404).send(responseError('You need to make an book API.'));
+        }
+
+        // Decrypt the encrypted attributes
+        const decryptedData = {
+            id: data.id,
+            supplierId: data.supplierId,
+            name: data.name,
+            endpoint: generalConfig.decryptData(data.endpoint),
+            method: data.method,
+            code: generalConfig.decryptData(data.code),
+            user: generalConfig.decryptData(data.user),
+            password: generalConfig.decryptData(data.password),
+            body: generalConfig.decryptData(data.body),
+            status: data.status,
+        };
+
+        const supplierData = await supplierModel.findOne({
+            where: { id: req.body.supplierId },
+            attributes: [
+                'id',
+                'code',
+                'name',
+                'urlApi',
+                'status',
+            ],
+        });
+
+        const responseData = {
+            ...decryptedData,
+            supplier: supplierData ? supplierData.toJSON() : null,
+        };
+
+        // Parse the JSON string in the body
+        const bodyData = JSON.parse(responseData.body);
+
+        if (bodyData.Login) {
+            // Replace placeholders in the Login object with actual values from the current item
+            bodyData.Login.AgencyCode = responseData.code;
+            bodyData.Login.Username = responseData.user;
+            bodyData.Login.Password = responseData.password;
+
+            bodyData.CheckOut = req.body.checkOut;
+            bodyData.CheckIn = req.body.checkIn;
+            bodyData.Language = req.body.language ?? "ID";
+
+            bodyData.SessionID = req.body.sessionId;
+            bodyData.HotelCode = req.body.hotelCode;
+            bodyData.RoomDetails.Code = req.body.roomCode;
+            bodyData.RoomDetails.MealPlan = req.body.mealPlan;
+            bodyData.RoomDetails.CancellationPolicyType = req.body.cancelPolicyType;
+            bodyData.RoomDetails.PackageRate = req.body.packageRate ?? false;
+
+            bodyData.AgencyBookingID = "sentra" + crypto.randomBytes(16).toString("hex");
+            bodyData.SpecialReq = req.body.request ?? "";
+
+            bodyData.Nationality = req.body.nationality ?? "ID";
+            bodyData.Currency = req.body.currency ?? "IDR";
+
+            if (bodyData.Rooms && Array.isArray(bodyData.Rooms.Room)) {
+                const roomArrayIndex = bodyData.Rooms.Room.indexOf("room");
+
+                if (roomArrayIndex !== -1) {
+                    // Check if "room" is found in the array
+                    bodyData.Rooms.Room.splice(roomArrayIndex, 1); // Remove the element at the found index
+                }
+
+                // Parse req.body.adult to an integer
+                const adultCount = parseInt(req.body.adult);
+
+                // Create an array of "Pax" objects
+                const paxArray = [];
+                for (let i = 0; i < adultCount; i++) {
+                    paxArray.push({
+                        "Salutation": req.body.guests[i].salutation,
+                        "FirstName": req.body.guests[i].firstName,
+                        "LastName": req.body.guests[i].lastName,
+                        "Age": req.body.guests[i].age
+                    });
+                }
+
+                bodyData.Rooms.Room.push(
+                    {
+                        "PaxDetails": {
+                            "Pax": paxArray
+                        },
+                        "RoomNo": req.body.roomNo.toString(),
+                        "NoOfAdults": req.body.adult.toString(),
+                        "NoOfChild": req.body.children.toString(),
+                        "ExtraBed": false,
+                        "RateKey": req.body.rateKey
+                    }
+                );
+            }
+        }
+
+        if (bodyData.Header) {
+
+            // Replace placeholders in bodyData with actual values from responseData
+            bodyData.Header.ClientID = responseData.user;
+            bodyData.Header.LicenseKey = responseData.password;
+            bodyData.CheckOutDate = req.body.checkOut;
+            bodyData.CheckInDate = req.body.checkIn;
+
+            bodyData.NumOfRooms = req.body.roomNo;
+            bodyData.ReferenceNo = req.body.sessionId;
+            bodyData.GuestList[0].RoomNum = req.body.roomNo;
+
+            bodyData.Contact.Name.First = req.body.contact.nameFirst;
+            bodyData.Contact.Name.Last = req.body.contact.nameLast;
+            bodyData.Contact.Email = req.body.contact.email;
+            bodyData.Contact.Phone = req.body.contact.phone;
+
+
+
+            // Parse req.body.adult to an integer
+            const adultCount = parseInt(req.body.adult);
+
+            // Create an array of "Pax" objects
+            const paxArray = [];
+            for (let i = 0; i < adultCount; i++) {
+                paxArray.push({
+                    "IsAdult": req.body.guests[i].age < 17 ? false : true,
+                    "Name": {
+                        "Last": req.body.guests[i].lastName,
+                        "First": req.body.guests[i].firstName
+                    }
+                });
+            }
+
+            bodyData.GuestList[0].GuestInfo = paxArray;
+
+            bodyData.ClientReference = req.body.rateKey;
+        }
+
+        // Transform bodyData into the data field of the config object
+        const configData = {
+            ...bodyData,
+        };
+
+        // Merge the configData with the other properties of the config object
+        const config = {
+            method: `${responseData.method}`,
+            url: `${responseData.supplier.urlApi}${responseData.endpoint}`,
+            data: configData,
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Accept-Encoding': 'gzip, deflate, br'
             }
         };
 
         axios(config)
-            .then(function (data) {
+            .then(async function (data) {
+                console.log(data.data)
                 if (data.data.status) {
                     bookingModel.create({
-                        mgBookingID: data?.data?.bookingDetails.mgBookingID,
-                        agencyBookingID: data?.data?.bookingDetails.agencyBookingID,
+                        bookingId: data?.data?.bookingDetails.mgBookingID,
+                        supplierId: req.body.supplierId,
+                        bookingStatus: "CONF",
+                        agencyBookingId: data?.data?.bookingDetails.agencyBookingID,
                         mgBookingVersionID: data?.data?.bookingDetails.mgBookingVersionID,
                         agencyVoucherNo: data?.data?.bookingDetails.agencyVoucherNo,
                         agencyVoucherDate: data?.data?.bookingDetails.agencyVoucherDate,
@@ -956,25 +1032,68 @@ const bookingHotels = async (req, res) => {
                         createdBy: req.user.id,
                         status: 1,
                         roomDetail: JSON.stringify(req.body.roomDetail),
-                        additionalRequest: JSON.stringify(req.body.additionalRequest),
+                        additionalRequest: JSON.stringify(req.body.request),
                     });
 
                     let guests = [];
                     req.body.guests.map(v => {
                         guests.push({
                             ...v,
-                            mgBookingID: data?.data?.bookingDetails.mgBookingID,
+                            bookingId: data?.data?.bookingDetails.mgBookingID,
                             createdBy: req.user.id,
                         });
                     })
                     bookingGuestModel.bulkCreate(guests);
 
                     res.status(200).send(responseSuccess('successfully book', data?.data?.bookingDetails))
+                } else if (data.data.Success) {
+                    let booking = data.data?.Success?.BookingDetails
+                    await bookingModel.create({
+                        bookingId: booking.BookingID,
+                        agencyBookingId: booking.ClientReference,
+                        localBookingId: "sentra" + crypto.randomBytes(16).toString("hex"),
+                        supplierId: req.body.supplierId,
+                        bookingStatus: "CONF",
+                        mgBookingVersionID: "-",
+                        agencyVoucherNo: "-",
+                        agencyVoucherDate: "-",
+                        hotelCode: booking.Hotel.HotelID,
+                        hotelName: booking.Hotel.HotelName,
+                        roomCode: req.body.roomCode,
+                        roomName: booking.Hotel.RatePlanList[0].RatePlanName,
+                        checkIn: req.body.checkIn,
+                        checkOut: req.body.checkOut,
+                        mealPlan: req.body.mealPlan,
+                        cancellationPolicyType: "-",
+                        cancellationPolicyAmount: booking.Hotel.CancellationPolicyList[0].Amount,
+                        cancellationPolicyDate: booking.Hotel.CancellationPolicyList[0].FromDate,
+                        netPrice: parseInt(booking.TotalPrice),
+                        grossPrice: parseInt(booking.TotalPrice),
+                        createdBy: req.user.id,
+                        status: 1,
+                        roomDetail: JSON.stringify(req.body.roomDetail),
+                        additionalRequest: JSON.stringify(req.body.request),
+                    });
+
+                    let guests = [];
+                    req.body.guests.map(v => {
+                        guests.push({
+                            ...v,
+                            bookingId: booking.BookingID,
+                            createdBy: req.user.id,
+                        });
+                    })
+                    await bookingGuestModel.bulkCreate(guests);
+
+                    res.status(200).send(responseSuccess('successfully book', data.data?.Success?.BookingDetails))
                 } else {
                     res.status(500).send(responseError(data.data.errorMessage))
                 }
+
+
             })
             .catch(function (error) {
+
                 throw error
             });
 
@@ -985,13 +1104,16 @@ const bookingHotels = async (req, res) => {
 
 const bookingList = async (req, res) => {
     try {
-        const query = await bookingModel.findAndCountAll({
+        const data = await bookingModel.findAndCountAll({
             attributes: [
                 'id',
-                'mgBookingID',
+                'supplierId',
+                'bookingId',
+                'agencyBookingId',
                 'mgBookingVersionID',
                 'agencyVoucherNo',
                 'agencyVoucherDate',
+                'bookingStatus',
                 'hotelCode',
                 'hotelName',
                 'roomCode',
@@ -1007,16 +1129,39 @@ const bookingList = async (req, res) => {
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
             where: {
-                mgBookingID: {
-                    [Op.like]: ['%' + (req.query.mgBookingID ?? '') + '%'],
+                bookingId: {
+                    [Op.like]: ['%' + (req.query.bookingId ?? '') + '%'],
                 },
                 status: 1,
             }
         });
 
-        const data = paginattionGenerator(req, query);
+        // Retrieve the suppman data for each entry
+        const responseData = await Promise.all(
+            data.rows.map(async (entry) => {
+                const supplierData = await supplierModel.findOne({
+                    where: { id: entry.supplierId },
+                    attributes: [
+                        'id',
+                        'code',
+                        'name',
+                        'urlApi',
+                        'status',
+                    ],
+                });
 
-        res.status(200).send(responseSuccess('Success', data));
+                return {
+                    ...entry.toJSON(),
+                    supplier: supplierData,
+                };
+            })
+        );
+
+        const result = paginattionGenerator(req, {
+            count: data.count,
+            rows: responseData,
+        });
+        res.status(200).send(responseSuccess('Data found.', result));
     } catch (error) {
         res.status(500).send(responseError(error))
     }
@@ -1024,32 +1169,101 @@ const bookingList = async (req, res) => {
 
 const bookingDetail = async (req, res) => {
     try {
-        const config = {
-            method: 'post',
-            url: `${process.env.JARVIS_URL}Hotel/GetRSVNDetails`,
-            data: {
-                "Login": {
-                    "AgencyCode": process.env.JARVIS_AGENCY_CODE,
-                    "Username": process.env.JARVIS_USER,
-                    "Password": process.env.JARVIS_PASS,
-                },
-                "MGBookingID": req.params.id,
-                "AgencyBookingID": "",
-                "Language": "EN",
-                "DetailLevel": "FULL"
+        const newDetailObjects = [];
+
+        const data = await supplierApiModel.findOne({
+            attributes: ['id', 'supplierId', 'name', 'url', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
+            where: {
+                supplierId: req.body.supplierId,
+                name: 'bookingList'
             },
+        });
+
+
+        if (!data || data.length === 0) {
+            return res.status(404).send(responseError('You need to make an book API.'));
+        }
+
+        // Decrypt the encrypted attributes
+        const decryptedData = {
+            id: data.id,
+            supplierId: data.supplierId,
+            name: data.name,
+            endpoint: generalConfig.decryptData(data.endpoint),
+            method: data.method,
+            code: generalConfig.decryptData(data.code),
+            user: generalConfig.decryptData(data.user),
+            password: generalConfig.decryptData(data.password),
+            body: generalConfig.decryptData(data.body),
+            status: data.status,
+        };
+
+        const supplierData = await supplierModel.findOne({
+            where: { id: req.body.supplierId },
+            attributes: [
+                'id',
+                'code',
+                'name',
+                'urlApi',
+                'status',
+            ],
+        });
+
+        const responseData = {
+            ...decryptedData,
+            supplier: supplierData ? supplierData.toJSON() : null,
+        };
+
+        console.log(responseData)
+        // Parse the JSON string in the body
+        const bodyData = JSON.parse(responseData.body);
+
+        if (bodyData.Login) {
+            // Replace placeholders in the Login object with actual values from the current item
+            bodyData.Login.AgencyCode = responseData.code;
+            bodyData.Login.Username = responseData.user;
+            bodyData.Login.Password = responseData.password;
+
+            bodyData.MGBookingID = req.params.id;
+            bodyData.AgencyBookingID = req.body.agencyBookingId ?? "";
+            bodyData.Language = req.body.language ?? "EN";
+
+
+        }
+
+        if (bodyData.Header) {
+
+            // Replace placeholders in bodyData with actual values from responseData
+            bodyData.Header.ClientID = responseData.user;
+            bodyData.Header.LicenseKey = responseData.password;
+
+            bodyData.SearchBy.BookingID = req.params.id
+        }
+
+        // Transform bodyData into the data field of the config object
+        const configData = {
+            ...bodyData,
+        };
+
+        // Merge the configData with the other properties of the config object
+        const config = {
+            method: `${responseData.method}`,
+            url: `${responseData.supplier.urlApi}${responseData.endpoint}`,
+            data: configData,
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Accept-Encoding': 'gzip, deflate, br'
             }
         };
 
         axios(config)
             .then(async function (data) {
+                console.log(data.data.Success.BookingDetailsList)
                 if (data.data.status) {
                     const [local] = await db.sequelize.query(`
                         SELECT
                             b.id bookingId,
-                            b.mgBookingID bookingMgBookingID,
+                            b.bookingId bookingMgBookingID,
                             b.mgBookingVersionID bookingMgBookingVersionID,
                             b.agencyVoucherNo bookingAgencyVoucherNo,
                             b.agencyVoucherDate bookingAgencyVoucherDate,
@@ -1070,8 +1284,7 @@ const bookingDetail = async (req, res) => {
                             b.roomDetail bookingRoomDetail,
                             b.additionalRequest bookingAdditionalRequest,
                             h.countryId hotelCountryCode,
-                            h.cityId hotelCityCode,
-                            h.locationCode hotelLocationCode,
+                            h.cityId hotelCityCode,                        
                             h.name hotelName,
                             h.code hotelCode,
                             h.email hotelEmail,
@@ -1088,8 +1301,7 @@ const bookingDetail = async (req, res) => {
                             h.totalRoom hotelTotalRoom,
                             h.status hotelStatus,
                             co.name hotelCountry,
-                            ci.long_name hotelCity,
-                            l.name hotelLocation,
+                            ci.long_name hotelCity,                                         
                             u.id userId,
                             u.firstName userFirstName,
                             u.lastName userLastName,
@@ -1102,12 +1314,12 @@ const bookingDetail = async (req, res) => {
                         INNER JOIN users u ON u.id = b.createdBy
                         LEFT JOIN country_code co ON co.isoId COLLATE utf8mb4_general_ci = h.countryId
                         LEFT JOIN city_code ci ON ci.code COLLATE utf8mb4_general_ci = h.cityId
-                        LEFT JOIN city_location l ON l.code = h.locationCode
-                        WHERE b.mgBookingID = '${req.params.id}'
+                        
+                        WHERE b.bookingId = '${req.params.id}'
                             AND b.status = '1'
                     `);
 
-                    const guests = await bookingGuestModel.findAll({ where: { mgBookingID: req.params.id } })
+                    const guests = await bookingGuestModel.findAll({ where: { bookingId: req.params.id } })
 
                     res.status(200).send(responseSuccess('successfully retrieving', {
                         ...data?.data?.bookingDetails,
@@ -1115,6 +1327,319 @@ const bookingDetail = async (req, res) => {
                             ...local[0],
                             bookingRoomDetail: JSON.parse(local[0].bookingRoomDetail),
                             bookingAdditionalRequest: JSON.parse(local[0].bookingAdditionalRequest),
+                            guests,
+                        },
+                    }))
+
+
+                } else if (data.data.Success) {
+                    let details = data?.data?.Success?.BookingDetailsList[0];
+                    const policy = [];
+                    const bookingData = await bookingModel.findOne({
+                        where: { bookingId: req.params.id, status: 1 },
+                        attributes: [
+                            'id',
+                            'supplierId',
+                            'localBookingId',
+                            'bookingId',
+                            'agencyBookingId',
+                            'mgBookingVersionID',
+                            'bookingStatus',
+                            'agencyVoucherNo',
+                            'agencyVoucherDate',
+                            'hotelCode',
+                            'hotelName',
+                            'roomCode',
+                            'roomName',
+                            'checkIn',
+                            'checkOut',
+                            'netPrice',
+                            'additionalRequest',
+                        ],
+                    });
+
+                    details.Hotel.CancellationPolicyList.map(async policies => {
+                        policy.push({
+                            "fromDate": policies.FromDate,
+                            "toDate": details.Hotel.RatePlanList[0]?.PriceList[0].StayDate,
+                            "amount": policies.Amount,
+                            "b2BMarkup": "",
+                            "grossAmount": "",
+                            "nights": "",
+                            "percent": "0",
+                            "noShow": false
+                        })
+                    })
+
+                    newDetailObjects.push({
+                        mgBookingID: bookingData.bookingId ?? "-",
+                        agencyBookingID: bookingData.agencyBookingId,
+                        mgBookingVersionID: bookingData.mgBookingVersionID,
+                        hotelBookingID: details.Hotel.HotelID,
+                        agencyVoucherNo: bookingData.agencyVoucherNo,
+                        agencyVoucherDate: bookingData.agencyVoucherDate,
+                        status: bookingData.bookingStatus,
+                        specialRequest: {
+                            "content": bookingData.additionalRequest,
+                            "cDataContent": [
+                                {
+                                    "#cdata-section": bookingData.additionalRequest
+                                }
+                            ]
+                        },
+                        bookingDt: details.OrderDate,
+                        nationality: "ID",
+                        checkIn: details.CheckInDate,
+                        checkOut: details.CheckOutDate,
+                        currency: "IDR",
+                        hotels:{
+                            hotel:{
+                                "code": details.Hotel.HotelID,
+                                "name": details.Hotel.HotelName,
+                                "rating": "-",
+                                "latitude": "-",
+                                "longitude": "",
+                                "roomDetails": {
+                                    "code": details.Hotel.RatePlanList[0].RoomTypeID,
+                                    "name": details.Hotel.RatePlanList[0].RoomName,
+                                    "mealPlan": "BDBF",
+                                    "mealPlanName": "Breakfast",
+                                    "cancellationPolicyType": "Flexi",
+                                    "promoCode": "",
+                                    "promoName": "",
+                                    "availFlag": true,
+                                    "canAmend": false,
+                                    "isOnHold": false,
+                                    "netPrice": 400001.01,
+                                    "grossPrice": 400001.01,
+                                    "msp": "",
+                                    "avgNightPrice": 400001.01,
+                                    "b2BMarkup": 0.00,
+                                    "cancellationPolicies": {
+                                        "policy": [
+                                            {
+                                                "fromDate": "2024-01-24",
+                                                "toDate": "2024-01-25",
+                                                "amount": "",
+                                                "b2BMarkup": "",
+                                                "grossAmount": "",
+                                                "nights": "",
+                                                "percent": "100.00",
+                                                "noShow": false
+                                            },
+                                            {
+                                                "fromDate": "2024-01-26",
+                                                "toDate": "2024-01-26",
+                                                "amount": "",
+                                                "b2BMarkup": "",
+                                                "grossAmount": "",
+                                                "nights": "1",
+                                                "percent": "",
+                                                "noShow": true
+                                            }
+                                        ]
+                                    },
+                                    "appliedCancellationPolicies": {
+                                        "policy": {
+                                            "fromDate": "2023-09-21",
+                                            "toDate": "2024-01-23",
+                                            "amount": "0.00",
+                                            "b2BMarkup": "0.00",
+                                            "grossAmount": "0.00",
+                                            "nights": "",
+                                            "percent": "",
+                                            "noShow": false
+                                        },
+                                        "cancellationCharges": {
+                                            "amount": "0.00",
+                                            "b2BMarkup": "0.00",
+                                            "grossAmount": "0.00",
+                                            "currency": "IDR"
+                                        }
+                                    },
+                                    "rooms": {
+                                        "room": [
+                                            {
+                                                "roomNo": 1,
+                                                "rateKey": null,
+                                                "status": "CANCELCONF",
+                                                "noOfAdults": 1,
+                                                "noOfChild": 0,
+                                                "extraBed": false,
+                                                "netPrice": 400001.01,
+                                                "grossPrice": 400001.01,
+                                                "avgNightPrice": 400001.01,
+                                                "b2BMarkup": 0.00,
+                                                "paxDetails": {
+                                                    "pax": [
+                                                        {
+                                                            "salutation": "NONE",
+                                                            "firstName": "Agung",
+                                                            "lastName": "Wicaksono",
+                                                            "age": ""
+                                                        }
+                                                    ]
+                                                },
+                                                "rateDetails": {
+                                                    "nightlyRates": {
+                                                        "nightlyRate": [
+                                                            {
+                                                                "srNo": 1,
+                                                                "netPrice": 400001.01,
+                                                                "grossPrice": 400001.01,
+                                                                "b2BMarkup": 0.00,
+                                                                "supplementaryDetails": {
+                                                                    "supplement": []
+                                                                },
+                                                                "compulsoryDetails": {
+                                                                    "compulsory": []
+                                                                }
+                                                            }
+                                                        ]
+                                                    },
+                                                    "discountDetails": {
+                                                        "total": 0.00,
+                                                        "promo": []
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "messages": {
+                                        "message": []
+                                    },
+                                    "packageRate": false
+                                }
+                            }
+                        },
+                        cancellationPolicies: {
+                            policy: policy
+                        },
+                        rooms: {
+                            room: [
+                                {
+                                    "roomNo": details.Hotel.RatePlanList[0].RoomNum,
+                                    "rateKey": details.Hotel.RatePlanList[0].RatePlanID,
+                                    "noOfAdults": details.Hotel.RatePlanList[0].AdultCount,
+                                    "noOfChild": details.Hotel.RatePlanList[0].ChildCount,
+                                    "child1Age": 0,
+                                    "child2Age": 0,
+                                    "extraBed": false,
+                                    "netPrice": details.TotalPrice,
+                                    "grossPrice": details.TotalPrice,
+                                    "avgNightPrice": details.TotalPrice,
+                                    "b2BMarkup": 0,
+                                    "rateDetails": {
+                                        "nightlyRates": {
+                                            "nightlyRate": [
+                                                {
+                                                    "srNo": 1,
+                                                    "netPrice": details.TotalPrice,
+                                                    "grossPrice": details.TotalPrice,
+                                                    "b2BMarkup": 0,
+                                                    "supplementaryDetails": {
+                                                        "supplement": [
+                                                            {
+                                                                "code": "",
+                                                                "name": "",
+                                                                "amount": details.TotalPrice,
+                                                                "description": ""
+                                                            }
+                                                        ]
+                                                    },
+                                                    "compulsoryDetails": {
+                                                        "compulsory": []
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "discountDetails": null
+                                    }
+                                }
+                            ]
+                        },
+                        messages: {
+                            message: [
+                                {
+                                    "content": "-",
+                                    "cDataContent": [
+                                        {
+                                            "#cdata-section": "-"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        packageRate: false
+                    });
+                    const [local] = await db.sequelize.query(`
+                    SELECT
+                        b.id bookingId,
+                        b.bookingId bookingMgBookingID,
+                        b.mgBookingVersionID bookingMgBookingVersionID,
+                        b.agencyVoucherNo bookingAgencyVoucherNo,
+                        b.agencyVoucherDate bookingAgencyVoucherDate,
+                        b.hotelCode bookingHotelCode,
+                        b.hotelName bookingHotelName,
+                        b.roomCode bookingRoomCode,
+                        b.roomName bookingRoomName,
+                        b.checkIn bookingCheckIn,
+                        b.checkOut bookingCheckOut,
+                        b.mealPlan bookingMealPlan,
+                        b.cancellationPolicyType bookingCancellationPolicyType,
+                        b.netPrice bookingNetPrice,
+                        b.grossPrice bookingGrossPrice,
+                        b.chargeNetPrice bookingChargeNetPrice,
+                        b.chargeGrossPrice bookingChargeGrossPrice,
+                        b.createdAt bookingCreatedAt,
+                        b.status bookingStatus,
+                        b.roomDetail bookingRoomDetail,
+                        b.additionalRequest bookingAdditionalRequest,
+                        h.countryId hotelCountryCode,
+                        h.cityId hotelCityCode,                        
+                        h.name hotelName,
+                        h.code hotelCode,
+                        h.email hotelEmail,
+                        h.phone hotelPhone,
+                        h.website hotelWebsite,
+                        h.address hotelAddress,
+                        h.zipCode hotelZipCode,
+                        h.latitude hotelLatitude,
+                        h.longitude hotelLongitude,
+                        h.checkInTime hotelCheckInTime,
+                        h.checkOutTime hotelCheckOutTime,
+                        h.extra hotelExtra,
+                        h.star hotelStar,
+                        h.totalRoom hotelTotalRoom,
+                        h.status hotelStatus,
+                        co.name hotelCountry,
+                        ci.long_name hotelCity,                                         
+                        u.id userId,
+                        u.firstName userFirstName,
+                        u.lastName userLastName,
+                        u.email userEmail,
+                        u.mobile userMobile,
+                        u.address userAddress,
+                        u.image userImage
+                    FROM bookings b
+                    INNER JOIN mapping_hotel mh ON mh.code = b.hotelCode
+                    LEFT JOIN ms_hotels h ON h.id = mh.masterId
+                    INNER JOIN users u ON u.id = b.createdBy
+                    LEFT JOIN country_code co ON co.isoId COLLATE utf8mb4_general_ci = h.countryId
+                    LEFT JOIN city_code ci ON ci.code COLLATE utf8mb4_general_ci = h.cityId
+                    
+                    WHERE b.bookingId = '${req.params.id}'
+                        AND b.status = '1'
+                `);
+
+                    const guests = await bookingGuestModel.findAll({ where: { bookingId: req.params.id } })
+                    console.log((local[0]))
+                    res.status(200).send(responseSuccess('successfully retrieving', {
+                        ...newDetailObjects[0],
+                        local: {
+                            ...local[0],
+                            bookingRoomDetail: local[0]?.bookingRoomDetail ?? "",
+                            bookingAdditionalRequest: local[0]?.bookingAdditionalRequest ?? "",
                             guests,
                         },
                     }))
@@ -1133,30 +1658,129 @@ const bookingDetail = async (req, res) => {
 
 const bookingCancel = async (req, res) => {
     try {
-        const config = {
-            method: 'post',
-            url: `${process.env.JARVIS_URL}Hotel/CancelReservation`,
-            data: {
-                "Login": {
-                    "AgencyCode": process.env.JARVIS_AGENCY_CODE,
-                    "Username": process.env.JARVIS_USER,
-                    "Password": process.env.JARVIS_PASS,
-                },
-                "MGBookingID": req.params.id,
-                "AgencyBookingID": "",
-                "SimulationFlag": false,
-                "CancelDate": moment().format('YYYY-MM-DD'),
-                "Language": "EN",
-                "DetailLevel": "FULL"
+        let bookingObjects = {};
+
+        const data = await supplierApiModel.findOne({
+            attributes: ['id', 'supplierId', 'name', 'url', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
+            where: {
+                supplierId: req.body.supplierId,
+                name: 'Cancel'
             },
+        });
+
+        if (!data || data.length === 0) {
+            return res.status(404).send(responseError('You need to make an cancel API.'));
+        }
+
+        // Decrypt the encrypted attributes
+        const decryptedData = {
+            id: data.id,
+            supplierId: data.supplierId,
+            name: data.name,
+            endpoint: generalConfig.decryptData(data.endpoint),
+            method: data.method,
+            code: generalConfig.decryptData(data.code),
+            user: generalConfig.decryptData(data.user),
+            password: generalConfig.decryptData(data.password),
+            body: generalConfig.decryptData(data.body),
+            status: data.status,
+        };
+
+        const supplierData = await supplierModel.findOne({
+            where: { id: req.body.supplierId },
+            attributes: [
+                'id',
+                'code',
+                'name',
+                'urlApi',
+                'status',
+            ],
+        });
+
+        const responseData = {
+            ...decryptedData,
+            supplier: supplierData ? supplierData.toJSON() : null,
+        };
+
+        // Parse the JSON string in the body
+        const bodyData = JSON.parse(responseData.body);
+
+        if (bodyData.Login) {
+            // Replace placeholders in the Login object with actual values from the current item
+            bodyData.Login.AgencyCode = responseData.code;
+            bodyData.Login.Username = responseData.user;
+            bodyData.Login.Password = responseData.password;
+
+            bodyData.MGBookingID = req.params.id;
+            bodyData.AgencyBookingID = req.params.agencyBookingId ?? "";
+            bodyData.SimulationFlag = false;
+            bodyData.CancelDate = g;
+            bodyData.Language = "EN";
+            bodyData.DetailLevel = "FULL";
+        }
+        if (bodyData.Header) {
+
+            // Replace placeholders in bodyData with actual values from responseData
+            bodyData.Header.ClientID = responseData.user;
+            bodyData.Header.LicenseKey = responseData.password;
+
+            bodyData.BookingID = req.params.id;
+        }
+
+        // Transform bodyData into the data field of the config object
+        const configData = {
+            ...bodyData,
+        };
+        console.log(configData)
+        // Merge the configData with the other properties of the config object
+        const config = {
+            method: `${responseData.method}`,
+            url: `${responseData.supplier.urlApi}${responseData.endpoint}`,
+            data: configData,
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Accept-Encoding': 'gzip, deflate, br'
             }
         };
 
         axios(config)
-            .then(function (data) {
+            .then(async function (data) {
+
                 if (data.data.status) {
+                    await bookingModel.update({
+                        bookingStatus: "CANCELCONF",
+                    }, { where: { bookingId: req.params.id } })
+
+                    res.status(200).send(responseSuccess('successfully cancel', data?.data?.bookingDetails))
+                } else if (data.data.Success) {
+                    await bookingModel.update({
+                        bookingStatus: "CANCELCONF",
+                    }, { where: { bookingId: req.params.id } })
+
+                    const confirm = {
+                        method: `${responseData.method}`,
+                        url: `${responseData.supplier.urlApi}${"api/booking/HotelBookingCancelConfirm?$format=json"}`,
+                        data: {
+
+                            "Header": {
+                                "LicenseKey": responseData.user,
+                                "ClientID": responseData.password
+                            },
+                            "ConfirmID": data.data.Success.ConfirmID,
+                            "BookingID": data.data.Success.BookingID
+
+                        },
+                        headers: {
+                            'Accept': 'application/json',
+                            'Accept-Encoding': 'gzip, deflate, br'
+                        }
+                    };
+
+                    axios(confirm)
+                        .then(async function (data) {
+                            res.status(200).send(responseSuccess('successfully cancel', req.params.id))
+                        })
+
                     res.status(200).send(responseSuccess('successfully cancel', data?.data?.bookingDetails))
                 } else {
                     res.status(500).send(responseError(data.data.errorMessage))
@@ -1169,6 +1793,7 @@ const bookingCancel = async (req, res) => {
     } catch (error) {
         res.status(500).send(responseError(error))
     }
+
 }
 
 module.exports = {

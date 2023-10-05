@@ -18,7 +18,7 @@ router.post('/search-hotel-room/:supplierId', auth, integrationHotelController.r
 router.post('/recheck', auth, integrationHotelController.recheckHotels);
 router.post('/booking', auth, integrationHotelController.bookingHotels);
 router.get('/booking-list', auth, integrationHotelController.bookingList);
-router.get('/booking-detail/:id', auth, integrationHotelController.bookingDetail);
+router.post('/booking-detail/:id', auth, integrationHotelController.bookingDetail);
 router.put('/booking-cancel/:id', auth, integrationHotelController.bookingCancel);
 
 router.post('/list-hotel', auth, extractFile, integrationMasterController.listHotels, middleErrMsg);

@@ -9,7 +9,10 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true
         },
-        mgBookingID: {
+        bookingId: {
+            type: DataTypes.STRING,
+        },
+        room: {
             type: DataTypes.STRING,
         },
         salutation: {

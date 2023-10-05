@@ -9,13 +9,23 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true
         },
-        mgBookingID: {
+        supplierId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,          
+        },
+        localBookingId: {
             type: DataTypes.STRING,
         },
-        agencyBookingID: {
+        bookingId: {
+            type: DataTypes.STRING,
+        },
+        agencyBookingId: {
             type: DataTypes.STRING,
         },
         mgBookingVersionID: {
+            type: DataTypes.STRING,
+        },
+        bookingStatus: {
             type: DataTypes.STRING,
         },
         agencyVoucherNo: {
@@ -47,6 +57,12 @@ module.exports = (sequelize, DataTypes) => {
         },
         cancellationPolicyType: {
             type: DataTypes.STRING,
+        },
+        cancellationPolicyAmount: {
+            type: DataTypes.STRING,
+        },
+        cancellationPolicyDate: {
+            type: DataTypes.DATE,
         },
         netPrice: {
             type: DataTypes.FLOAT,
