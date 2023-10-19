@@ -43,6 +43,32 @@ const create = async (req, res) => {
 
 const list = async (req, res) => {
     try {
+        const whereConditions = {            
+            [Op.or]: [
+                {
+                    code: {
+                        [Op.like]: ['%' + (req.query.name ?? '') + '%'],
+                    },
+                },
+                {
+                    name: {
+                        [Op.like]: ['%' + (req.query.name ?? '') + '%'],
+                    },
+                },
+            ],
+        };
+        
+         // Add countryId to whereConditions if it exists in req.body
+         if (req.query.countryId) {
+            whereConditions.countryId = req.query.countryId;
+        }
+
+        // Add cityId to whereConditions if it exists in req.body
+        if (req.query.cityId) {
+            whereConditions.cityId = req.query.cityId;
+        }
+
+
         const data = await hotelModel.findAndCountAll({
             attributes: [
                 'id',                
@@ -76,20 +102,7 @@ const list = async (req, res) => {
             ],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
-            where: {
-                [Op.and]: [
-                    {
-                        name: {
-                            [Op.like]: ['%' + (req.query.name ?? '') + '%'],
-                        },
-                    },
-                    {
-                        code: {
-                            [Op.like]: ['%' + (req.query.code ?? '') + '%'],
-                        },
-                    },
-                ]
-            }
+            where: whereConditions,
         });
 
        
