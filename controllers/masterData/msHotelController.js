@@ -103,6 +103,9 @@ const list = async (req, res) => {
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
             where: whereConditions,
+            order: [
+                ['name', 'ASC'], // Sort by short_name in ascending order
+            ],
         });
 
        

@@ -19,6 +19,7 @@ const generalConfig = require('../../config/generalConfig');
 
 var axios = require('axios');
 const { responseSuccess, responseError } = require('../../utils/response');
+const { read } = require('fs');
 
 const searchHotels = async (req, res) => {
     try {
@@ -339,212 +340,382 @@ const roomDidaHotels = async (req, res) => {
     try {
         const supplierId = req.params?.supplierId;
         const newRoomObjects = [];
-
-        const data = await supplierApiModel.findOne({
+        let readProcess = 0;
+        let readTotal = 0;
+        const data = await supplierApiModel.findAll({
             attributes: ['id', 'supplierId', 'name', 'url', 'endpoint', 'method', 'code', 'user', 'password', 'body', 'status'],
             where: {
-                supplierId: supplierId,
-                name: 'Search Room' // Add the condition where name = 'Country'
+                // supplierId: supplierId,
+                [Op.or]: [
+                    { name: 'Search Room' },
+                    { name: 'Search' }
+                ]
             },
         });
 
-        // Decrypt the encrypted attributes
-        const decryptedData = {
-            id: data.id,
-            supplierId: data.supplierId,
-            name: data.name,
-            endpoint: generalConfig.decryptData(data.endpoint),
-            method: data.method,
-            code: generalConfig.decryptData(data.code),
-            user: generalConfig.decryptData(data.user),
-            password: generalConfig.decryptData(data.password),
-            body: generalConfig.decryptData(data.body),
-            status: data.status,
-        };
-
-        const supplierData = await supplierModel.findOne({
-            where: { id: data.supplierId },
-            attributes: [
-                'id',
-                'code',
-                'name',
-                'urlApi',
-                'status',
-            ],
-        });
-
-        const responseData = {
-            ...decryptedData,
-            supplier: supplierData ? supplierData.toJSON() : null,
-        };
-
-        // Parse the JSON string in the body
-        const bodyData = JSON.parse(responseData.body);
-
-        if (bodyData.Header) {
-            const hotelIdArrayIndex = bodyData.HotelIDList.indexOf("hotelId");
-            const childAgeArrayIndex = bodyData.RealTimeOccupancy.ChildAgeDetails.indexOf("realTimeAge");
-
-            if (hotelIdArrayIndex !== -1) {
-                // Check if "hotelId" is found in the array
-                bodyData.HotelIDList.splice(hotelIdArrayIndex, 1); // Remove the element at the found index
-            }
-
-            if (childAgeArrayIndex !== -1) {
-                // Check if "hotelId" is found in the array
-                bodyData.RealTimeOccupancy.ChildAgeDetails.splice(childAgeArrayIndex, 1); // Remove the element at the found index
-            }
-
-
-            // Replace placeholders in bodyData with actual values from responseData
-            bodyData.Header.ClientID = responseData.user;
-            bodyData.Header.LicenseKey = responseData.password;
-            bodyData.HotelIDList.push(req.body.code);
-            bodyData.LowestPriceOnly = false;
-            bodyData.CheckOutDate = req.body.checkOut;
-            bodyData.CheckInDate = req.body.checkIn;
-            bodyData.IsRealTime.Value = true;
-            bodyData.IsRealTime.RoomCount = req.body.realTimeRoom ?? 1;
-            bodyData.RealTimeOccupancy.ChildCount = req.body.realTimeValue ?? 0;
-            bodyData.RealTimeOccupancy.AdultCount = req.body.realTimeAdult ?? 1;
-
+        if (!data || data.length === 0) {
+            return res.status(404).send(responseError('Data not found.'));
         }
 
-        bodyData.Nationality = req.body.nationality ?? "ID";
-        bodyData.Currency = req.body.currency ?? "IDR";
+        // Decrypt the encrypted attributes for each data entry
+        const decryptedData = data
+            .map((entry) => {
+                if (entry.supplierId !== 5 || entry.name !== 'Search') {
+                    return {
+                        id: entry.id,
+                        supplierId: entry.supplierId,
+                        name: entry.name,
+                        endpoint: generalConfig.decryptData(entry.endpoint),
+                        url: generalConfig.decryptData(entry.url),
+                        method: entry.method,
+                        code: generalConfig.decryptData(entry.code),
+                        user: generalConfig.decryptData(entry.user),
+                        password: generalConfig.decryptData(entry.password),
+                        body: generalConfig.decryptData(entry.body),
+                        status: entry.status,
+                    };
+                }
+                return null; // return null for entries that don't meet the conditions
+            })
+            .filter((entry) => entry !== null); // filter out null entries
 
-        // Transform bodyData into the data field of the config object
-        const configData = {
-            ...bodyData,
-        };
+        if (Array.isArray(decryptedData)) {
+            // Use Promise.all to await all async operations
+            await Promise.all(decryptedData.map(async (item) => {
 
-        // Merge the configData with the other properties of the config object
-        const config = {
-            method: `${responseData.method}`,
-            url: `${responseData.supplier.urlApi}${responseData.endpoint}`,
-            data: configData,
-            headers: {
-                'Accept': 'application/json',
-                'Accept-Encoding': 'gzip, deflate, br'
-            }
-        };
+                const supplierData = await supplierModel.findOne({
+                    where: { id: item.supplierId },
+                    attributes: [
+                        'id',
+                        'code',
+                        'name',
+                        'urlApi',
+                        'status',
+                    ],
+                });
 
-        axios(config)
-            .then(async function (data) {
+                const hotelData = await mappingHotelModel.findOne({
+                    where: { code: req.body.code },
+                    attributes: [
+                        'id',
+                        'masterId',
+                        'code',
+                        'name',
+                        'status',
+                    ],
+                });
 
+                if (hotelData) {
 
-                if (data.data.Success) {
-                    let rooms = data?.data?.Success?.PriceDetails?.HotelList[0].RatePlanList;
-                    await Promise.all(rooms.map(async room => {
-                        const policy = [];
+                    const updatedHotelData = await mappingHotelModel.findAll({
+                        where: {
+                            masterId: hotelData.masterId,
+                            supplierId: item.supplierId,
+                        },
+                        attributes: ['id', 'masterId', 'supplierId', 'countryId', 'cityId', 'code', 'name', 'status'],
+                    });
 
-                        // policy.push(room?.RatePlanCancellationPolicyList)
+                    const url = item.url.length > 0 ? item.url : supplierData.urlApi;
 
-                        room.RatePlanCancellationPolicyList.map(async policies => {
-                            policy.push({
-                                "fromDate": policies.FromDate,
-                                "toDate": room?.PriceList[0].StayDate,
-                                "amount": policies.Amount,
-                                "b2BMarkup": "",
-                                "grossAmount": "",
-                                "nights": "",
-                                "percent": "0",
-                                "noShow": false
-                            })
-                        })
+                    // Parse the JSON array in the responseData.body
+                    const bodyData = JSON.parse(item.body);
 
+                    await Promise.all(updatedHotelData.map(async (updatedHotelData) => {
 
-                        newRoomObjects.push({
-                            code: room?.RoomTypeID ?? "-",
-                            name: room?.RoomName ?? room?.RatePlanName,
-                            mealPlan: room?.PriceList[0].MealType,
-                            mealPlanName: room?.PriceList[0].MealType,
-                            cancellationPolicyType: room?.RoomTypeID,
-                            promoCode: "-",
-                            promoName: "-",
-                            availFlag: false,
-                            canAmend: false,
-                            canHold: false,
-                            netPrice: room.TotalPrice,
-                            grossPrice: room.TotalPrice,
-                            avgNightPrice: room.TotalPrice,
-                            b2BMarkup: 0,
-                            packageRate: false,
+                        const mappingCountryData = await mappingCountryModel.findOne({
+                            attributes: [
+                                'id',
+                                'supplierId',
+                                'masterId',
+                                'code',
+                                'name',
+                                'status'
+                            ],
+                            where: {
+                                id: updatedHotelData.countryId
+                            }
+                        });
 
-                            cancellationPolicies: {
-                                policy: policy
-                            },
-                            rooms: {
-                                room: [
+                        const mappingCityData = await mappingCityModel.findOne({
+                            attributes: [
+                                'id',
+                                'supplierId',
+                                'masterId',
+                                'countryId',
+                                'code',
+                                'name',
+                                'status'
+                            ],
+                            where: {
+                                id: updatedHotelData.cityId
+                            }
+                        });
+
+                        if (bodyData.Login) {
+                            // Replace placeholders in the Login object with actual values from the current item
+
+                            const hotelIdArrayIndex = bodyData.Hotels.Code.indexOf("code");
+
+                            bodyData.Login.AgencyCode = item.code;
+                            bodyData.Login.Username = item.user;
+                            bodyData.Login.Password = item.password;
+
+                            bodyData.CheckOut = req.body.checkOut;
+                            bodyData.CheckIn = req.body.checkIn;
+                            bodyData.Language = req.body.language;
+                            bodyData.Country = mappingCountryData.code;
+                            bodyData.City = mappingCityData.code;
+
+                            if (hotelIdArrayIndex !== -1) {
+                                // Check if "hotelId" is found in the array
+                                bodyData.Hotels.Code.splice(0, 1); // Remove the element at the found index
+                            }
+
+                            bodyData.Hotels.Code.push(updatedHotelData.code);
+
+                            if (bodyData.Rooms && Array.isArray(bodyData.Rooms.Room)) {
+                                const roomArrayIndex = bodyData.Rooms.Room.indexOf("room");
+
+                                if (roomArrayIndex !== -1) {
+                                    // Check if "room" is found in the array
+                                    bodyData.Rooms.Room.splice(roomArrayIndex, 1); // Remove the element at the found index
+                                }
+
+                                bodyData.Rooms.Room.push(
                                     {
-                                        "roomNo": room.RoomOccupancy.RoomNum,
-                                        "rateKey": room.RatePlanID,
-                                        "noOfAdults": room.RoomOccupancy.AdultCount,
-                                        "noOfChild": room.RoomOccupancy.ChildCount,
-                                        "child1Age": 0,
-                                        "child2Age": 0,
-                                        "extraBed": false,
-                                        "netPrice": room.TotalPrice,
-                                        "grossPrice": room.TotalPrice,
-                                        "avgNightPrice": room.TotalPrice,
-                                        "b2BMarkup": 0,
-                                        "rateDetails": {
-                                            "nightlyRates": {
-                                                "nightlyRate": [
+                                        "RoomNo": req.body.realTimeRoom,
+                                        "NoOfAdults": req.body.realTimeAdult,
+                                        "NoOfChild": "",
+                                        "Child1Age": "",
+                                        "Child2Age": "",
+                                        "ExtraBed": false
+                                    }
+                                );
+                            }
+                            readTotal += 1;
+                        }
+
+                        if (bodyData.Header) {
+                            const hotelIdArrayIndex = bodyData.HotelIDList.indexOf("hotelId");
+                            const childAgeArrayIndex = bodyData.RealTimeOccupancy.ChildAgeDetails.indexOf("realTimeAge");
+
+                            if (hotelIdArrayIndex !== -1) {
+                                // Check if "hotelId" is found in the array
+                                bodyData.HotelIDList.splice(hotelIdArrayIndex, 1); // Remove the element at the found index
+                            }
+
+                            if (childAgeArrayIndex !== -1) {
+                                // Check if "hotelId" is found in the array
+                                bodyData.RealTimeOccupancy.ChildAgeDetails.splice(childAgeArrayIndex, 1); // Remove the element at the found index
+                            }
+
+
+                            // Replace placeholders in bodyData with actual values from responseData
+                            bodyData.Header.ClientID = item.user;
+                            bodyData.Header.LicenseKey = item.password;
+                            bodyData.HotelIDList.push(parseInt(updatedHotelData.code));
+                            bodyData.LowestPriceOnly = false;
+                            bodyData.CheckOutDate = req.body.checkOut;
+                            bodyData.CheckInDate = req.body.checkIn;
+                            bodyData.IsRealTime.Value = true;
+                            bodyData.IsRealTime.RoomCount = req.body.realTimeRoom ?? 1;
+                            bodyData.RealTimeOccupancy.ChildCount = req.body.realTimeValue ?? 0;
+                            bodyData.RealTimeOccupancy.AdultCount = req.body.realTimeAdult ?? 1;
+
+                            readTotal += 1;
+                        }
+
+                        bodyData.Nationality = req.body.nationality ?? "ID";
+                        bodyData.Currency = req.body.currency ?? "IDR";
+
+                        // Transform bodyData into the data field of the config object
+                        const configData = {
+                            ...bodyData,
+                        };
+                        // Add any other modifications you need for each item in the array
+
+                        const config = {
+                            method: item.method,
+                            url: `${url}${item.endpoint}`,
+                            data: configData, // Use the body from the current item
+                            headers: {
+                                'Accept': 'application/json',
+                                'Accept-Encoding': 'gzip, deflate, br'
+                            }
+                        };
+
+                        axios(config)
+                            .then(async function (data) {
+                                // console.log(data)
+
+
+                                if (data.data.sessionID) {
+                                    console.log(data.data)
+                                    let hotels = data?.data?.hotels?.hotel[0].roomDetails;
+
+                                    await Promise.all(hotels.map(async hotel => {
+                                        newRoomObjects.push({
+                                            supplierId: item.supplierId,
+                                            supplierCode: supplierData.code,
+                                            supplierName: supplierData.name,
+                                            sessionId: data.data.sessionID,
+                                            hotelCode: updatedHotelData.code,
+                                            hotelName: updatedHotelData.name,
+                                            code: hotel?.code,
+                                            name: hotel?.name,
+                                            mealPlan: hotel?.mealPlan,
+                                            mealPlanName: hotel?.mealPlanName,
+                                            cancellationPolicyType: hotel?.cancellationPolicyType,
+                                            promoCode: hotel?.promoCode,
+                                            promoName: hotel?.promoName,
+                                            availFlag: hotel?.availFlag,
+                                            canAmend: hotel?.canAmend,
+                                            canHold: hotel?.canHold,
+                                            netPrice: hotel?.netPrice,
+                                            grossPrice: hotel?.grossPrice,
+                                            avgNightPrice: hotel?.avgNightPrice,
+                                            b2BMarkup: hotel?.b2BMarkup,
+                                            packageRate: hotel?.packageRate,
+                                            cancellationPolicies: hotel?.cancellationPolicies,
+                                            rooms: hotel?.rooms,
+                                            messages: hotel?.messages
+
+                                        });
+                                    }))
+                                    readProcess += 1;
+                                }
+
+                                if (data.data.Success) {
+
+                                    let rooms = data?.data?.Success?.PriceDetails?.HotelList[0].RatePlanList;
+                                    await Promise.all(rooms.map(async room => {
+                                        const policy = [];
+
+                                        // policy.push(room?.RatePlanCancellationPolicyList)
+
+                                        room.RatePlanCancellationPolicyList.map(async policies => {
+                                            policy.push({
+                                                "fromDate": policies.FromDate,
+                                                "toDate": room?.PriceList[0].StayDate,
+                                                "amount": policies.Amount,
+                                                "b2BMarkup": "",
+                                                "grossAmount": "",
+                                                "nights": "",
+                                                "percent": "0",
+                                                "noShow": false
+                                            })
+                                        })
+
+
+                                        newRoomObjects.push({
+                                            supplierId: item.supplierId,
+                                            supplierCode: supplierData.code,
+                                            supplierName: supplierData.name,
+                                            sessionId: req.body.sessionId,
+                                            hotelCode: updatedHotelData.code,
+                                            hotelName: updatedHotelData.name,
+                                            code: room?.RoomTypeID ?? "-",
+                                            name: room?.RoomName ?? room?.RatePlanName,
+                                            mealPlan: room?.PriceList[0].MealType,
+                                            mealPlanName: room?.PriceList[0].MealType,
+                                            cancellationPolicyType: room?.RoomTypeID,
+                                            promoCode: "-",
+                                            promoName: "-",
+                                            availFlag: false,
+                                            canAmend: false,
+                                            canHold: false,
+                                            netPrice: room.TotalPrice,
+                                            grossPrice: room.TotalPrice,
+                                            avgNightPrice: room.TotalPrice,
+                                            b2BMarkup: 0,
+                                            packageRate: false,
+
+                                            cancellationPolicies: {
+                                                policy: policy
+                                            },
+                                            rooms: {
+                                                room: [
                                                     {
-                                                        "srNo": 1,
+                                                        "roomNo": room.RoomOccupancy.RoomNum,
+                                                        "rateKey": room.RatePlanID,
+                                                        "noOfAdults": room.RoomOccupancy.AdultCount,
+                                                        "noOfChild": room.RoomOccupancy.ChildCount,
+                                                        "child1Age": 0,
+                                                        "child2Age": 0,
+                                                        "extraBed": false,
                                                         "netPrice": room.TotalPrice,
                                                         "grossPrice": room.TotalPrice,
+                                                        "avgNightPrice": room.TotalPrice,
                                                         "b2BMarkup": 0,
-                                                        "supplementaryDetails": {
-                                                            "supplement": [
-                                                                {
-                                                                    "code": "SUPPATBOOK",
-                                                                    "name": "SUPP",
-                                                                    "amount": room.TotalPrice,
-                                                                    "description": ""
-                                                                }
-                                                            ]
-                                                        },
-                                                        "compulsoryDetails": {
-                                                            "compulsory": []
+                                                        "rateDetails": {
+                                                            "nightlyRates": {
+                                                                "nightlyRate": [
+                                                                    {
+                                                                        "srNo": 1,
+                                                                        "netPrice": room.TotalPrice,
+                                                                        "grossPrice": room.TotalPrice,
+                                                                        "b2BMarkup": 0,
+                                                                        "supplementaryDetails": {
+                                                                            "supplement": [
+                                                                                {
+                                                                                    "code": "SUPPATBOOK",
+                                                                                    "name": "SUPP",
+                                                                                    "amount": room.TotalPrice,
+                                                                                    "description": ""
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        "compulsoryDetails": {
+                                                                            "compulsory": []
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "discountDetails": null
                                                         }
                                                     }
                                                 ]
                                             },
-                                            "discountDetails": null
-                                        }
-                                    }
-                                ]
-                            },
-                            messages: {
-                                message: [
-                                    {
-                                        "content": "-",
-                                        "cDataContent": [
-                                            {
-                                                "#cdata-section": "-"
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
+                                            messages: {
+                                                message: [
+                                                    {
+                                                        "content": "-",
+                                                        "cDataContent": [
+                                                            {
+                                                                "#cdata-section": "-"
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            },
 
-                        });
-                    })
-                    )
+                                        });
+                                    })
+                                    )
+                                    readProcess += 1;
+                                }
+                                console.log("Test")
+                                console.log(readProcess)
+                                console.log(readTotal)
+                                if (readProcess == decryptedData.length) {
+                                    res.status(200).send(responseSuccess('Success', {
+                                        rooms: newRoomObjects,
+                                        total: newRoomObjects.length
+                                    }))
+                                }
 
-                    res.status(200).send(responseSuccess('Success', {
-                        rooms: newRoomObjects,
-                        total: newRoomObjects.length
+                            })
+
+                            .catch(error => {
+                                // console.log(error)
+                                res.status(500).send(responseError('Error occurred'));
+                            });
                     }))
                 }
-            })
-            .catch(error => {
-                // console.log(error)
-                throw error;
-            });
 
+            }))
+
+        }
 
     } catch (error) {
         res.status(500).send(responseError(error))
@@ -681,7 +852,7 @@ const recheckHotels = async (req, res) => {
             bodyData.CheckOutDate = req.body.checkOut;
             bodyData.CheckInDate = req.body.checkIn;
             bodyData.NumOfRooms = req.body.roomNo;
-            bodyData.HotelID = req.body.hotelCode;
+            bodyData.HotelID = parseInt(req.body.hotelCode);
 
             bodyData.OccupancyDetails[0].ChildCount = req.body.childs ?? 0;
             bodyData.OccupancyDetails[0].AdultCount = 1;
@@ -713,11 +884,11 @@ const recheckHotels = async (req, res) => {
 
         axios(config)
             .then(async function (data) {
-                console.log(data.data)
+                console.log(data)
                 if (data.data.status) {
                     res.status(200).send(responseSuccess('successfully recheck', data?.data?.hotels?.hotel))
                 } else if (data.data.Success) {
-                    console.log(data.data.Success)
+                    
                     let hotelData = data?.data?.Success?.PriceDetails?.HotelList[0];
                     let rooms = hotelData.RatePlanList;
 
@@ -725,8 +896,8 @@ const recheckHotels = async (req, res) => {
                         const policy = [];
 
                         // policy.push(room?.RatePlanCancellationPolicyList)
-
-                        room?.CancellationPolicyList?.map(async policies => {
+                        
+                        hotelData?.CancellationPolicyList?.map(async policies => {
                             policy.push({
                                 "fromDate": policies.FromDate,
                                 "toDate": room?.PriceList[0].StayDate,
@@ -832,7 +1003,7 @@ const recheckHotels = async (req, res) => {
                 }
             })
             .catch(function (error) {
-                throw error
+                res.status(500).send(responseError('Error occurred'));
             });
 
     } catch (error) {
@@ -909,7 +1080,7 @@ const bookingHotels = async (req, res) => {
             bodyData.RoomDetails.CancellationPolicyType = req.body.cancelPolicyType;
             bodyData.RoomDetails.PackageRate = req.body.packageRate ?? false;
 
-            bodyData.AgencyBookingID = "sentra" + crypto.randomBytes(16).toString("hex");
+            bodyData.AgencyBookingID = "SE" + crypto.randomInt(5).toString("hex");
             bodyData.SpecialReq = req.body.request ?? "";
 
             bodyData.Nationality = req.body.nationality ?? "ID";
@@ -1009,7 +1180,7 @@ const bookingHotels = async (req, res) => {
 
         axios(config)
             .then(async function (data) {
-                console.log(data.data)
+                console.log(data)
                 if (data.data.status) {
                     bookingModel.create({
                         bookingId: data?.data?.bookingDetails.mgBookingID,
@@ -1051,7 +1222,7 @@ const bookingHotels = async (req, res) => {
                     await bookingModel.create({
                         bookingId: booking.BookingID,
                         agencyBookingId: booking.ClientReference,
-                        localBookingId: "sentra" + crypto.randomBytes(16).toString("hex"),
+                        localBookingId: "SE" + crypto.randomInt(5).toString("hex"),
                         supplierId: req.body.supplierId,
                         bookingStatus: "CONF",
                         mgBookingVersionID: "-",
@@ -1086,15 +1257,13 @@ const bookingHotels = async (req, res) => {
                     await bookingGuestModel.bulkCreate(guests);
 
                     res.status(200).send(responseSuccess('successfully book', data.data?.Success?.BookingDetails))
-                } else {
-                    res.status(500).send(responseError(data.data.errorMessage))
-                }
+                } 
 
 
             })
             .catch(function (error) {
-
-                throw error
+                res.status(500).send(responseError(error))
+                
             });
 
     } catch (error) {
@@ -1258,11 +1427,12 @@ const bookingDetail = async (req, res) => {
 
         axios(config)
             .then(async function (data) {
-                console.log(data.data.Success.BookingDetailsList)
+                // console.log(data.data.Success.BookingDetailsList)
                 if (data.data.status) {
                     const [local] = await db.sequelize.query(`
                         SELECT
                             b.id bookingId,
+                            b.agencyBookingId localBookingId,
                             b.bookingId bookingMgBookingID,
                             b.mgBookingVersionID bookingMgBookingVersionID,
                             b.agencyVoucherNo bookingAgencyVoucherNo,
@@ -1392,8 +1562,8 @@ const bookingDetail = async (req, res) => {
                         checkIn: details.CheckInDate,
                         checkOut: details.CheckOutDate,
                         currency: "IDR",
-                        hotels:{
-                            hotel:{
+                        hotels: {
+                            hotel: {
                                 "code": details.Hotel.HotelID,
                                 "name": details.Hotel.HotelName,
                                 "rating": "-",
@@ -1575,6 +1745,7 @@ const bookingDetail = async (req, res) => {
                     const [local] = await db.sequelize.query(`
                     SELECT
                         b.id bookingId,
+                        b.localBookingId localBookingId,
                         b.bookingId bookingMgBookingID,
                         b.mgBookingVersionID bookingMgBookingVersionID,
                         b.agencyVoucherNo bookingAgencyVoucherNo,
@@ -1643,9 +1814,7 @@ const bookingDetail = async (req, res) => {
                             guests,
                         },
                     }))
-                } else {
-                    res.status(500).send(responseError(data.data.errorMessage))
-                }
+                } 
             })
             .catch(function (error) {
                 throw error
@@ -1714,7 +1883,7 @@ const bookingCancel = async (req, res) => {
             bodyData.MGBookingID = req.params.id;
             bodyData.AgencyBookingID = req.params.agencyBookingId ?? "";
             bodyData.SimulationFlag = false;
-            bodyData.CancelDate = g;
+            bodyData.CancelDate = moment().format('YYYY-MM-DD');
             bodyData.Language = "EN";
             bodyData.DetailLevel = "FULL";
         }

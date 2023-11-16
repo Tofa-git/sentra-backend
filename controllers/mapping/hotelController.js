@@ -360,7 +360,7 @@ const showMappingHotel = async (req, res, next) => {
             limit: req.query.limit ? +req.query.limit : 10,
             where: whereConditions,
             order: [
-                ['code', 'ASC'], // Sort by short_name in ascending order
+                ['name', 'ASC'], // Sort by short_name in ascending order
             ],
         });
 
