@@ -696,13 +696,16 @@ const roomDidaHotels = async (req, res) => {
                                 }
                                 console.log("Test")
                                 console.log(readProcess)
-                                console.log(readTotal)
-                                if (readProcess == decryptedData.length) {
+                                console.log(decryptedData.length)
+
+                                if (readProcess == decryptedData.length || readProcess == 1) {
                                     res.status(200).send(responseSuccess('Success', {
                                         rooms: newRoomObjects,
                                         total: newRoomObjects.length
                                     }))
                                 }
+
+                                
 
                             })
 
