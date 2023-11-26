@@ -339,6 +339,7 @@ const searchHotels = async (req, res) => {
 const roomDidaHotels = async (req, res) => {
     try {
         const supplierId = req.params?.supplierId;
+        let hotelPromises;
         const newRoomObjects = [];
         let readProcess = 0;
         let readTotal = 0;
@@ -419,8 +420,11 @@ const roomDidaHotels = async (req, res) => {
 
                     // Parse the JSON array in the responseData.body
                     const bodyData = JSON.parse(item.body);
+                    const timeoutMs = 100000; // Set your desired timeout in milliseconds
 
-                    await Promise.all(updatedHotelData.map(async (updatedHotelData) => {
+                    hotelPromises = await Promise.all(updatedHotelData.map(async (updatedHotelData) => {
+
+                        console.log('Start processing hotel:', updatedHotelData.code);
 
                         const mappingCountryData = await mappingCountryModel.findOne({
                             attributes: [
@@ -544,179 +548,197 @@ const roomDidaHotels = async (req, res) => {
                             }
                         };
 
-                        axios(config)
-                            .then(async function (data) {
-                                // console.log(data)
+                        try {
+                            const axiosPromise =
+                                axios(config)
+                                    .then(async function (data) {
+                                        // console.log(data)
+                                        if (data.data.sessionID) {
+                                            console.log(data.data)
+                                            let hotels = data?.data?.hotels?.hotel[0].roomDetails;
+
+                                            await Promise.all(hotels.map(async hotel => {
+                                                newRoomObjects.push({
+                                                    supplierId: item.supplierId,
+                                                    supplierCode: supplierData.code,
+                                                    supplierName: supplierData.name,
+                                                    sessionId: data.data.sessionID,
+                                                    hotelCode: updatedHotelData.code,
+                                                    hotelName: updatedHotelData.name,
+                                                    code: hotel?.code,
+                                                    name: hotel?.name,
+                                                    mealPlan: hotel?.mealPlan,
+                                                    mealPlanName: hotel?.mealPlanName,
+                                                    cancellationPolicyType: hotel?.cancellationPolicyType,
+                                                    promoCode: hotel?.promoCode,
+                                                    promoName: hotel?.promoName,
+                                                    availFlag: hotel?.availFlag,
+                                                    canAmend: hotel?.canAmend,
+                                                    canHold: hotel?.canHold,
+                                                    netPrice: hotel?.netPrice,
+                                                    grossPrice: hotel?.grossPrice,
+                                                    avgNightPrice: hotel?.avgNightPrice,
+                                                    b2BMarkup: hotel?.b2BMarkup,
+                                                    packageRate: hotel?.packageRate,
+                                                    cancellationPolicies: hotel?.cancellationPolicies,
+                                                    rooms: hotel?.rooms,
+                                                    messages: hotel?.messages
+
+                                                });
+                                            }))
+                                            readProcess += 1;
+                                        }
+
+                                        if (data.data.Success) {
+
+                                            let rooms = data?.data?.Success?.PriceDetails?.HotelList[0].RatePlanList;
+                                            await Promise.all(rooms.map(async room => {
+                                                const policy = [];
+
+                                                // policy.push(room?.RatePlanCancellationPolicyList)
+
+                                                room.RatePlanCancellationPolicyList.map(async policies => {
+                                                    policy.push({
+                                                        "fromDate": policies.FromDate,
+                                                        "toDate": room?.PriceList[0].StayDate,
+                                                        "amount": policies.Amount,
+                                                        "b2BMarkup": "",
+                                                        "grossAmount": "",
+                                                        "nights": "",
+                                                        "percent": "0",
+                                                        "noShow": false
+                                                    })
+                                                })
 
 
-                                if (data.data.sessionID) {
-                                    console.log(data.data)
-                                    let hotels = data?.data?.hotels?.hotel[0].roomDetails;
+                                                newRoomObjects.push({
+                                                    supplierId: item.supplierId,
+                                                    supplierCode: supplierData.code,
+                                                    supplierName: supplierData.name,
+                                                    sessionId: req.body.sessionId,
+                                                    hotelCode: updatedHotelData.code,
+                                                    hotelName: updatedHotelData.name,
+                                                    code: room?.RoomTypeID ?? "-",
+                                                    name: room?.RoomName ?? room?.RatePlanName,
+                                                    mealPlan: room?.PriceList[0].MealType,
+                                                    mealPlanName: room?.PriceList[0].MealType,
+                                                    cancellationPolicyType: room?.RoomTypeID,
+                                                    promoCode: "-",
+                                                    promoName: "-",
+                                                    availFlag: false,
+                                                    canAmend: false,
+                                                    canHold: false,
+                                                    netPrice: room.TotalPrice,
+                                                    grossPrice: room.TotalPrice,
+                                                    avgNightPrice: room.TotalPrice,
+                                                    b2BMarkup: 0,
+                                                    packageRate: false,
 
-                                    await Promise.all(hotels.map(async hotel => {
-                                        newRoomObjects.push({
-                                            supplierId: item.supplierId,
-                                            supplierCode: supplierData.code,
-                                            supplierName: supplierData.name,
-                                            sessionId: data.data.sessionID,
-                                            hotelCode: updatedHotelData.code,
-                                            hotelName: updatedHotelData.name,
-                                            code: hotel?.code,
-                                            name: hotel?.name,
-                                            mealPlan: hotel?.mealPlan,
-                                            mealPlanName: hotel?.mealPlanName,
-                                            cancellationPolicyType: hotel?.cancellationPolicyType,
-                                            promoCode: hotel?.promoCode,
-                                            promoName: hotel?.promoName,
-                                            availFlag: hotel?.availFlag,
-                                            canAmend: hotel?.canAmend,
-                                            canHold: hotel?.canHold,
-                                            netPrice: hotel?.netPrice,
-                                            grossPrice: hotel?.grossPrice,
-                                            avgNightPrice: hotel?.avgNightPrice,
-                                            b2BMarkup: hotel?.b2BMarkup,
-                                            packageRate: hotel?.packageRate,
-                                            cancellationPolicies: hotel?.cancellationPolicies,
-                                            rooms: hotel?.rooms,
-                                            messages: hotel?.messages
-
-                                        });
-                                    }))
-                                    readProcess += 1;
-                                }
-
-                                if (data.data.Success) {
-
-                                    let rooms = data?.data?.Success?.PriceDetails?.HotelList[0].RatePlanList;
-                                    await Promise.all(rooms.map(async room => {
-                                        const policy = [];
-
-                                        // policy.push(room?.RatePlanCancellationPolicyList)
-
-                                        room.RatePlanCancellationPolicyList.map(async policies => {
-                                            policy.push({
-                                                "fromDate": policies.FromDate,
-                                                "toDate": room?.PriceList[0].StayDate,
-                                                "amount": policies.Amount,
-                                                "b2BMarkup": "",
-                                                "grossAmount": "",
-                                                "nights": "",
-                                                "percent": "0",
-                                                "noShow": false
-                                            })
-                                        })
-
-
-                                        newRoomObjects.push({
-                                            supplierId: item.supplierId,
-                                            supplierCode: supplierData.code,
-                                            supplierName: supplierData.name,
-                                            sessionId: req.body.sessionId,
-                                            hotelCode: updatedHotelData.code,
-                                            hotelName: updatedHotelData.name,
-                                            code: room?.RoomTypeID ?? "-",
-                                            name: room?.RoomName ?? room?.RatePlanName,
-                                            mealPlan: room?.PriceList[0].MealType,
-                                            mealPlanName: room?.PriceList[0].MealType,
-                                            cancellationPolicyType: room?.RoomTypeID,
-                                            promoCode: "-",
-                                            promoName: "-",
-                                            availFlag: false,
-                                            canAmend: false,
-                                            canHold: false,
-                                            netPrice: room.TotalPrice,
-                                            grossPrice: room.TotalPrice,
-                                            avgNightPrice: room.TotalPrice,
-                                            b2BMarkup: 0,
-                                            packageRate: false,
-
-                                            cancellationPolicies: {
-                                                policy: policy
-                                            },
-                                            rooms: {
-                                                room: [
-                                                    {
-                                                        "roomNo": room.RoomOccupancy.RoomNum,
-                                                        "rateKey": room.RatePlanID,
-                                                        "noOfAdults": room.RoomOccupancy.AdultCount,
-                                                        "noOfChild": room.RoomOccupancy.ChildCount,
-                                                        "child1Age": 0,
-                                                        "child2Age": 0,
-                                                        "extraBed": false,
-                                                        "netPrice": room.TotalPrice,
-                                                        "grossPrice": room.TotalPrice,
-                                                        "avgNightPrice": room.TotalPrice,
-                                                        "b2BMarkup": 0,
-                                                        "rateDetails": {
-                                                            "nightlyRates": {
-                                                                "nightlyRate": [
-                                                                    {
-                                                                        "srNo": 1,
-                                                                        "netPrice": room.TotalPrice,
-                                                                        "grossPrice": room.TotalPrice,
-                                                                        "b2BMarkup": 0,
-                                                                        "supplementaryDetails": {
-                                                                            "supplement": [
-                                                                                {
-                                                                                    "code": "SUPPATBOOK",
-                                                                                    "name": "SUPP",
-                                                                                    "amount": room.TotalPrice,
-                                                                                    "description": ""
-                                                                                }
-                                                                            ]
-                                                                        },
-                                                                        "compulsoryDetails": {
-                                                                            "compulsory": []
-                                                                        }
-                                                                    }
-                                                                ]
-                                                            },
-                                                            "discountDetails": null
-                                                        }
-                                                    }
-                                                ]
-                                            },
-                                            messages: {
-                                                message: [
-                                                    {
-                                                        "content": "-",
-                                                        "cDataContent": [
+                                                    cancellationPolicies: {
+                                                        policy: policy
+                                                    },
+                                                    rooms: {
+                                                        room: [
                                                             {
-                                                                "#cdata-section": "-"
+                                                                "roomNo": room.RoomOccupancy.RoomNum,
+                                                                "rateKey": room.RatePlanID,
+                                                                "noOfAdults": room.RoomOccupancy.AdultCount,
+                                                                "noOfChild": room.RoomOccupancy.ChildCount,
+                                                                "child1Age": 0,
+                                                                "child2Age": 0,
+                                                                "extraBed": false,
+                                                                "netPrice": room.TotalPrice,
+                                                                "grossPrice": room.TotalPrice,
+                                                                "avgNightPrice": room.TotalPrice,
+                                                                "b2BMarkup": 0,
+                                                                "rateDetails": {
+                                                                    "nightlyRates": {
+                                                                        "nightlyRate": [
+                                                                            {
+                                                                                "srNo": 1,
+                                                                                "netPrice": room.TotalPrice,
+                                                                                "grossPrice": room.TotalPrice,
+                                                                                "b2BMarkup": 0,
+                                                                                "supplementaryDetails": {
+                                                                                    "supplement": [
+                                                                                        {
+                                                                                            "code": "SUPPATBOOK",
+                                                                                            "name": "SUPP",
+                                                                                            "amount": room.TotalPrice,
+                                                                                            "description": ""
+                                                                                        }
+                                                                                    ]
+                                                                                },
+                                                                                "compulsoryDetails": {
+                                                                                    "compulsory": []
+                                                                                }
+                                                                            }
+                                                                        ]
+                                                                    },
+                                                                    "discountDetails": null
+                                                                }
                                                             }
                                                         ]
-                                                    }
-                                                ]
-                                            },
+                                                    },
+                                                    messages: {
+                                                        message: [
+                                                            {
+                                                                "content": "-",
+                                                                "cDataContent": [
+                                                                    {
+                                                                        "#cdata-section": "-"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    },
 
-                                        });
+                                                });
+                                            })
+                                            )
+                                            readProcess += 1;
+                                        }
+                                        console.log("Test")
+                                        console.log(readProcess)
+                                        console.log(decryptedData.length)
+
                                     })
-                                    )
-                                    readProcess += 1;
-                                }
-                                console.log("Test")
-                                console.log(readProcess)
-                                console.log(decryptedData.length)
 
-                                if (readProcess == decryptedData.length || readProcess == 1) {
-                                    res.status(200).send(responseSuccess('Success', {
-                                        rooms: newRoomObjects,
-                                        total: newRoomObjects.length
-                                    }))
-                                }
+                            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Promise timeout')), timeoutMs));
 
-                                
+                            await Promise.race([axiosPromise, timeoutPromise]);
 
-                            })
+                            console.log('Promise completed successfully for hotel:', updatedHotelData.code);
+                        } catch (error) {
+                            res.status(500).send(responseError('Error occurred'));
+                            throw error;
+                        }
 
-                            .catch(error => {
-                                // console.log(error)
-                                res.status(500).send(responseError('Error occurred'));
-                            });
-                    }))
+
+
+                    }))                    
                 }
-
             }))
+            try {
+                console.log('Before await Promise.all');
+                await Promise.all(hotelPromises);
+                console.log('After await Promise.all');
+
+                // If this code is reached, it means all promises are resolved
+                console.log('All promises are resolved');
+
+                // 'results' will contain an array of resolved values from each promise
+
+                // Send the response once after all promises are resolved
+                res.status(200).send(responseSuccess('Success', {
+                    rooms: newRoomObjects,
+                    total: newRoomObjects.length
+                }));
+            } catch (error) {
+                // Handle any errors that occurred in the promises
+                console.error(error);
+                // res.status(500).send(responseError('Error occurred'));
+            }
 
         }
 
@@ -724,6 +746,7 @@ const roomDidaHotels = async (req, res) => {
         res.status(500).send(responseError(error))
     }
 }
+
 
 const recheckHotels = async (req, res) => {
     try {
@@ -891,7 +914,7 @@ const recheckHotels = async (req, res) => {
                 if (data.data.status) {
                     res.status(200).send(responseSuccess('successfully recheck', data?.data?.hotels?.hotel))
                 } else if (data.data.Success) {
-                    
+
                     let hotelData = data?.data?.Success?.PriceDetails?.HotelList[0];
                     let rooms = hotelData.RatePlanList;
 
@@ -899,7 +922,7 @@ const recheckHotels = async (req, res) => {
                         const policy = [];
 
                         // policy.push(room?.RatePlanCancellationPolicyList)
-                        
+
                         hotelData?.CancellationPolicyList?.map(async policies => {
                             policy.push({
                                 "fromDate": policies.FromDate,
@@ -1260,13 +1283,13 @@ const bookingHotels = async (req, res) => {
                     await bookingGuestModel.bulkCreate(guests);
 
                     res.status(200).send(responseSuccess('successfully book', data.data?.Success?.BookingDetails))
-                } 
+                }
 
 
             })
             .catch(function (error) {
                 res.status(500).send(responseError(error))
-                
+
             });
 
     } catch (error) {
@@ -1817,7 +1840,7 @@ const bookingDetail = async (req, res) => {
                             guests,
                         },
                     }))
-                } 
+                }
             })
             .catch(function (error) {
                 throw error
