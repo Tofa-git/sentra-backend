@@ -910,8 +910,9 @@ const recheckHotels = async (req, res) => {
 
         axios(config)
             .then(async function (data) {
-                console.log(data)
+                
                 if (data.data.status) {
+                    
                     res.status(200).send(responseSuccess('successfully recheck', data?.data?.hotels?.hotel))
                 } else if (data.data.Success) {
 
@@ -1106,7 +1107,7 @@ const bookingHotels = async (req, res) => {
             bodyData.RoomDetails.CancellationPolicyType = req.body.cancelPolicyType;
             bodyData.RoomDetails.PackageRate = req.body.packageRate ?? false;
 
-            bodyData.AgencyBookingID = "SE" + crypto.randomInt(5).toString("hex");
+            bodyData.AgencyBookingID = "SE" + crypto.randomInt(10000, 99999).toString();
             bodyData.SpecialReq = req.body.request ?? "";
 
             bodyData.Nationality = req.body.nationality ?? "ID";
@@ -1248,7 +1249,7 @@ const bookingHotels = async (req, res) => {
                     await bookingModel.create({
                         bookingId: booking.BookingID,
                         agencyBookingId: booking.ClientReference,
-                        localBookingId: "SE" + crypto.randomInt(5).toString("hex"),
+                        localBookingId: "SE" + crypto.randomInt(10000, 99999).toString(),
                         supplierId: req.body.supplierId,
                         bookingStatus: "CONF",
                         mgBookingVersionID: "-",
