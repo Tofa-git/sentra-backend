@@ -911,9 +911,21 @@ const recheckHotels = async (req, res) => {
         axios(config)
             .then(async function (data) {
                 
-                if (data.data.status) {
+                if (data.data.status) {                    
+                    recheckObjects = {
+                        code: data.data.hotels.hotel.code,
+                        name: data.data.hotels.hotel.name,
+                        latitude: data.data.hotels.hotel.latitude,
+                        longitude: data.data.hotels.hotel.longitude,
+                        rating: data.data.hotels.hotel.rating,
+                        sessionId: data.data.sessionID,
+                        roomDetails: data.data.hotels.hotel.roomDetails,
+                        rooms: data.data.hotels.hotel.roomDetails.rooms,
+                        messages: data.data.hotels.hotel.roomDetails.messages
+
+                    };
                     
-                    res.status(200).send(responseSuccess('successfully recheck', data?.data?.hotels?.hotel))
+                    res.status(200).send(responseSuccess('successfully recheck', recheckObjects))
                 } else if (data.data.Success) {
 
                     let hotelData = data?.data?.Success?.PriceDetails?.HotelList[0];
