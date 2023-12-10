@@ -4,8 +4,8 @@
 HOST='localhost'
 USER='root'
 PASSWORD=''
-DATABASE='db name'
-PORT='port number'
+DATABASE='your db name'
+PORT='your port number'
 JWT_PRIVATE_KEY='your secret key'
 SENDGRID_API_KEY='your sendgrid key'
 
