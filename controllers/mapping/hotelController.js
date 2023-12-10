@@ -328,12 +328,12 @@ const showMappingHotel = async (req, res, next) => {
         }
 
         // Add isShow to whereConditions if it exists in req.body
-        if (req.body.isShow === true) {            
+        if (req.body.isShow === true) {
             whereConditions.masterId = {
                 [Op.ne]: 0, // Filter out rows where masterId is not equal to 0
             };
         }
-        
+
         const data = await mappingHotelModel.findAndCountAll({
             attributes: [
                 'id',
@@ -367,7 +367,7 @@ const showMappingHotel = async (req, res, next) => {
         // Retrieve the suppman data for each entry
         const responseData = await Promise.all(
             data.rows.map(async (entry) => {
-                
+
                 const supplier = await supplierModel.findOne({
                     where: { id: entry.supplierId },
                     attributes: ['id', 'code', 'name', 'creditDay', 'status'],
@@ -424,54 +424,55 @@ const showMappingHotel = async (req, res, next) => {
 const createHotel = async (req, res) => {
 
     if (req.body && Array.isArray(req.body)) {
-        const hotels = req.body.map(
-            async hotel => {
-
-                const countryData = await countryDataModel.findOne({
-                    where: {
-                        code: hotel.address.countryCode,
-                    },
-                });
-
-                const cityData = await cityDataModel.findOne({
-                    where: {
-                        code: hotel.address.cityCode,
-                    },
-                });
-
-                const existingHotel = await hotelMasterModel.findOne({
-                    where: {
-                        name: {
-                            [Op.like]: `%${hotel.name}%`,
-                        },
-                    },
-                });
-
-                return {
-                    supplierId: responseData.supplierId,
-                    masterId: createdHotel.id,
-                    countryId: countryData.id,
-                    cityId: cityData.id,
-                    name: hotel.name,
-                    code: hotel.code,
-                    address: hotel.address.line1 ?? "-", // Assuming address is in the form of an object
-                    zipCode: hotel.address.zipCode ?? "-",
-                    latitude: parseFloat(hotel.geoLocation.latitude) ?? 0,
-                    longitude: parseFloat(hotel.geoLocation.longitude) ?? 0,
-                    phone: (hotel.reservation.telephone === "NA" || hotel.reservation.telephone === "N/A" || hotel.reservation.telephone === "") ? "-" : hotel.reservation.telephone,
-                    chainCode: (hotel.chainCode === "NA" || hotel.chainCode === "N/A" || hotel.chainCode === "") ? "-" : hotel.chainCode,
-                    chainName: (hotel.chainName === "NA" || hotel.chainName === "N/A" || hotel.chainName === "") ? "-" : hotel.chainName,
-                    brandCode: (hotel.brandCode === "NA" || hotel.brandCode === "N/A" || hotel.brandCode === "") ? "-" : hotel.brandCode,
-                    brandName: (hotel.brandName === "NA" || hotel.brandName === "N/A" || hotel.brandName === "") ? "-" : hotel.brandName,
-                    type: (hotel.type === "NA" || hotel.type === "N/A" || hotel.type === "") ? "-" : hotel.type,
-                    star: star,
-                    status: '1',
-                    createdBy: req.user.id,
-                }
-            });
-
-
         try {
+            const hotels = req.body.map(
+                async hotel => {
+
+                    const countryData = await countryDataModel.findOne({
+                        where: {
+                            code: hotel.address.countryCode,
+                        },
+                    });
+
+                    const cityData = await cityDataModel.findOne({
+                        where: {
+                            code: hotel.address.cityCode,
+                        },
+                    });
+
+                    const existingHotel = await hotelMasterModel.findOne({
+                        where: {
+                            name: {
+                                [Op.like]: `%${hotel.name}%`,
+                            },
+                        },
+                    });
+
+                    return {
+                        supplierId: responseData.supplierId,
+                        masterId: createdHotel.id,
+                        countryId: countryData.id,
+                        cityId: cityData.id,
+                        name: hotel.name,
+                        code: hotel.code,
+                        address: hotel.address.line1 ?? "-", // Assuming address is in the form of an object
+                        zipCode: hotel.address.zipCode ?? "-",
+                        latitude: parseFloat(hotel.geoLocation.latitude) ?? 0,
+                        longitude: parseFloat(hotel.geoLocation.longitude) ?? 0,
+                        phone: (hotel.reservation.telephone === "NA" || hotel.reservation.telephone === "N/A" || hotel.reservation.telephone === "") ? "-" : hotel.reservation.telephone,
+                        chainCode: (hotel.chainCode === "NA" || hotel.chainCode === "N/A" || hotel.chainCode === "") ? "-" : hotel.chainCode,
+                        chainName: (hotel.chainName === "NA" || hotel.chainName === "N/A" || hotel.chainName === "") ? "-" : hotel.chainName,
+                        brandCode: (hotel.brandCode === "NA" || hotel.brandCode === "N/A" || hotel.brandCode === "") ? "-" : hotel.brandCode,
+                        brandName: (hotel.brandName === "NA" || hotel.brandName === "N/A" || hotel.brandName === "") ? "-" : hotel.brandName,
+                        type: (hotel.type === "NA" || hotel.type === "N/A" || hotel.type === "") ? "-" : hotel.type,
+                        star: star,
+                        status: '1',
+                        createdBy: req.user.id,
+                    }
+                });
+
+
+
             await mappingHotelModel.bulkCreate(hotels).then(data => {
                 res.status(201).send({ data: data, message: 'user sales created successfully' });
             })
@@ -492,77 +493,180 @@ const createHotel = async (req, res) => {
 }
 
 const createHotelDida = async (req, res) => {
-    const hotelObjects = req.body.map(async (hotel) => {
-        const countryData = await countryDataModel.findOne({
-            where: {
-                code: hotel.CountryCode,
-                supplierId: req.query.supplierId,
-            },
-        });
-
-        const cityData = await cityDataModel.findOne({
-            where: {
-                code: hotel.DestinationCode,
-                supplierId: req.query.supplierId,
-            },
-        });
-
-        const existingHotel = await hotelMasterModel.findOne({
-            where: {
-                name: {
-                    [Op.like]: `%${hotel.HotelName}%`,
-                },
-            },
-        });
-
-        const existingMappingHotel = await mappingHotelModel.findOne({
-            where: {
-                [Op.and]: [
-                    { name: hotel.HotelName },
-                ],
-            },
-        });
-
-        if (existingMappingHotel == null) {
-            return {
-                supplierId: '5',
-                masterId: existingHotel != null ? existingHotel.id : 0,
-                countryId: countryData != null ? countryData.id : 1,
-                cityId: cityData != null ? cityData.id : 1,
-                cityName: hotel.City,
-                cityCode: hotel.CityCode,
-                name: hotel.HotelName,
-                code: hotel.DidaHotelID,
-                address: hotel.Address ?? "-",
-                zipCode: hotel.ZipCode ?? "-",
-                latitude: parseFloat(hotel.Latitude) ?? 0,
-                longitude: parseFloat(hotel.Longitude) ?? 0,
-                phone: (hotel.telephone === null || hotel.telephone === "N/A" || hotel.telephone === "") ? "-" : hotel.telephone,
-                chainCode: (hotel.HotelChain === null || hotel.HotelChain === "N/A" || hotel.HotelChain === "") ? "-" : hotel.HotelChain,
-                chainName: (hotel.HotelChain === null || hotel.HotelChain === "N/A" || hotel.HotelChain === "") ? "-" : hotel.HotelChain,
-                brandCode: (hotel.SubHotelChain === null || hotel.SubHotelChain === "N/A" || hotel.SubHotelChain === "") ? "-" : hotel.SubHotelChain,
-                brandName: (hotel.SubHotelChain === null || hotel.SubHotelChain === "N/A" || hotel.SubHotelChain === "") ? "-" : hotel.SubHotelChain,
-                type: (hotel.HotelCategory === null || hotel.HotelCategory === "N/A" || hotel.HotelCategory === "") ? "-" : hotel.HotelCategory,
-                star: hotel.StarRating,
-                status: '1',
-                createdBy: req.user.id,
-            };
-        }
-
-    });
-
     try {
-        const hotels = await Promise.all(hotelObjects);
-        await mappingHotelModel.bulkCreate(hotels).then((data) => {
-            res.status(201).send({ data: data, message: 'Hotels created successfully' });
-        }).catch((err) => {
-            res.status(500).send({
-                data: null,
-                message: err.name === "SequelizeUniqueConstraintError" ? "Hotel with the same name already exists" : "Some error occurred while creating the Hotels."
+        let apiData = [];
+        let url = "";
+
+        if (Array.isArray(req.body)) {
+            const hotelObjects = req.body.map(async (hotel) => {
+                const countryData = await countryDataModel.findOne({
+                    where: {
+                        code: hotel.CountryCode,
+                        supplierId: req.query.supplierId,
+                    },
+                });
+        
+                const cityData = await cityDataModel.findOne({
+                    where: {
+                        code: hotel.DestinationCode,
+                        supplierId: req.query.supplierId,
+                    },
+                });
+        
+                const existingHotel = await hotelMasterModel.findOne({
+                    where: {
+                        name: {
+                            [Op.like]: `%${hotel.HotelName}%`,
+                        },
+                    },
+                });
+        
+                const existingMappingHotel = await mappingHotelModel.findOne({
+                    where: {
+                        [Op.and]: [
+                            { name: hotel.HotelName },
+                        ],
+                    },
+                });
+        
+                if (existingMappingHotel == null) {
+                    return {
+                        supplierId: '5',
+                        masterId: existingHotel != null ? existingHotel.id : 0,
+                        countryId: countryData != null ? countryData.id : 1,
+                        cityId: cityData != null ? cityData.id : 1,
+                        cityName: hotel.City,
+                        cityCode: hotel.CityCode,
+                        name: hotel.HotelName,
+                        code: hotel.DidaHotelID,
+                        address: hotel.Address ?? "-",
+                        zipCode: hotel.ZipCode ?? "-",
+                        latitude: parseFloat(hotel.Latitude) ?? 0,
+                        longitude: parseFloat(hotel.Longitude) ?? 0,
+                        phone: (hotel.telephone === null || hotel.telephone === "N/A" || hotel.telephone === "") ? "-" : hotel.telephone,
+                        chainCode: (hotel.HotelChain === null || hotel.HotelChain === "N/A" || hotel.HotelChain === "") ? "-" : hotel.HotelChain,
+                        chainName: (hotel.HotelChain === null || hotel.HotelChain === "N/A" || hotel.HotelChain === "") ? "-" : hotel.HotelChain,
+                        brandCode: (hotel.SubHotelChain === null || hotel.SubHotelChain === "N/A" || hotel.SubHotelChain === "") ? "-" : hotel.SubHotelChain,
+                        brandName: (hotel.SubHotelChain === null || hotel.SubHotelChain === "N/A" || hotel.SubHotelChain === "") ? "-" : hotel.SubHotelChain,
+                        type: (hotel.HotelCategory === null || hotel.HotelCategory === "N/A" || hotel.HotelCategory === "") ? "-" : hotel.HotelCategory,
+                        star: hotel.StarRating,
+                        status: '1',
+                        createdBy: req.user.id,
+                    };
+                }
+        
             });
-            console.log(err);
-        });
+        
+            try {
+                const hotels = await Promise.all(hotelObjects);
+                await mappingHotelModel.bulkCreate(hotels).then((data) => {
+                    res.status(201).send({ data: data, message: 'Hotels created successfully' });
+                }).catch((err) => {
+                    res.status(500).send({
+                        data: null,
+                        message: err.name === "SequelizeUniqueConstraintError" ? "Hotel with the same name already exists" : "Some error occurred while creating the Hotels."
+                    });
+                    console.log(err);
+                });
+            } catch (error) {
+                res.status(500).send({
+                    data: null,
+                    message: 'Unable to create hotels, Please try again later',
+                    error: error.message
+                });
+            }
+        }
+        else {
+
+            if (req.body.type = "Indonesia") {
+                url = 'https://raega.web.id/hoteldida/logxml/HOTEL-ID.json';
+            }
+            const config = {
+                method: 'GET',
+                url: url,
+                data: "",
+                headers: {
+                    'Accept': 'application/json',
+                    'Accept-Encoding': 'gzip, deflate, br'
+                }
+            };
+            const response = await axios(config);
+            
+            apiData = response.data.Response;
+            console.log(apiData)
+            const hotelObjects = apiData.map(async (hotel) => {
+                console.log(hotel)
+                const countryData = await countryDataModel.findOne({
+                    where: {
+                        code: hotel.CountryCode,
+                        supplierId: req.query.supplierId,
+                    },
+                });
+
+                const cityData = await cityDataModel.findOne({
+                    where: {
+                        code: hotel.DestinationCode,
+                        supplierId: req.query.supplierId,
+                    },
+                });
+
+                const existingHotel = await hotelMasterModel.findOne({
+                    where: {
+                        name: {
+                            [Op.like]: `%${hotel.HotelName}%`,
+                        },
+                    },
+                });
+
+                const existingMappingHotel = await mappingHotelModel.findOne({
+                    where: {
+                        [Op.and]: [
+                            { name: hotel.HotelName },
+                        ],
+                    },
+                });
+
+                if (existingMappingHotel == null) {
+                    return {
+                        supplierId: '5',
+                        masterId: existingHotel != null ? existingHotel.id : 0,
+                        countryId: countryData != null ? countryData.id : 1,
+                        cityId: cityData != null ? cityData.id : 1,
+                        cityName: hotel.City,
+                        cityCode: hotel.CityCode,
+                        name: hotel.HotelName ?? "-",
+                        code: hotel.DidaHotelID ?? "-",
+                        address: hotel.Address ?? "-",
+                        zipCode: hotel.ZipCode ?? "-",
+                        latitude: parseFloat(hotel.Latitude) ?? 0,
+                        longitude: parseFloat(hotel.Longitude) ?? 0,
+                        phone: (hotel.telephone === null || hotel.telephone === "N/A" || hotel.telephone === "") ? "-" : hotel.telephone,
+                        chainCode: (hotel.HotelChain === null || hotel.HotelChain === "N/A" || hotel.HotelChain === "") ? "-" : hotel.HotelChain,
+                        chainName: (hotel.HotelChain === null || hotel.HotelChain === "N/A" || hotel.HotelChain === "") ? "-" : hotel.HotelChain,
+                        brandCode: (hotel.SubHotelChain === null || hotel.SubHotelChain === "N/A" || hotel.SubHotelChain === "") ? "-" : hotel.SubHotelChain,
+                        brandName: (hotel.SubHotelChain === null || hotel.SubHotelChain === "N/A" || hotel.SubHotelChain === "") ? "-" : hotel.SubHotelChain,
+                        type: (hotel.HotelCategory === null || hotel.HotelCategory === "N/A" || hotel.HotelCategory === "") ? "-" : hotel.HotelCategory,
+                        star: hotel.StarRating,
+                        status: '1',
+                        createdBy: req.user.id,
+                    };
+                }
+
+            });
+
+            const hotels = await Promise.all(hotelObjects);
+            await mappingHotelModel.bulkCreate(hotels).then((data) => {
+                res.status(201).send({ data: data, message: 'Hotels created successfully' });
+            }).catch((err) => {
+                console.log(err)
+                res.status(500).send({
+                    data: null,
+                    message: err.name === "SequelizeUniqueConstraintError" ? "Hotel with the same name already exists" : "Some error occurred while creating the Hotels."
+                });
+            });
+        }
     } catch (error) {
+        console.log(error)
         res.status(500).send({
             data: null,
             message: 'Unable to create hotels, Please try again later',
@@ -582,7 +686,7 @@ const updateHotel = async (req, res) => {
             // cityCode:req.body.cityCode,
             name: req.body.name,
             code: req.body.code,
-            phone: req.body.phone,
+            phone: req.body.phone ?? "",
             address: req.body.address,
             zipCode: req.body.zipCode,
             star: req.body.star,
