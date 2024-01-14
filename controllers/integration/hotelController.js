@@ -14,6 +14,8 @@ const cityDataModel = db.cityCode;
 const mappingCityModel = db.mappingCity;
 const mappingCountryModel = db.mappingCountry;
 const mappingHotelModel = db.mappingHotel;
+const guestModel = db.bookingGuest;
+const userModel = db.users;
 const moment = require('moment/moment');
 const generalConfig = require('../../config/generalConfig');
 
@@ -1333,6 +1335,7 @@ const bookingList = async (req, res) => {
                 'netPrice',
                 'grossPrice',
                 'createdAt',
+                'createdBy',
             ],
             offset: req.query.page ? (+req.query.page - 1) * +req.query.limit : 0,
             limit: req.query.limit ? +req.query.limit : 10,
@@ -1358,9 +1361,42 @@ const bookingList = async (req, res) => {
                     ],
                 });
 
+                const guest = await guestModel.findAll({
+                    where: { bookingId: entry.bookingId},
+                    attributes: [
+                        'id',
+                        'room',
+                        'salutation',
+                        'firstName',
+                        'lastName',                        
+                    ],
+                });
+                
+                const user = await userModel.findOne({
+                    where: { id: entry.createdBy},
+                    attributes: [
+                        'id',                                                
+                        'firstName',
+                        'lastName',                        
+                    ],
+                });
+
+                const hotelData = await mappingHotelModel.findOne({
+                    where: { code: entry.hotelCode, supplierId:entry.supplierId },
+                    attributes: [
+                        'id',
+                        'code',
+                        'name',
+                        'status',
+                    ],
+                });
+
                 return {
                     ...entry.toJSON(),
                     supplier: supplierData,
+                    hotel:hotelData,
+                    guest:guest,
+                    user:user,
                 };
             })
         );
@@ -1471,6 +1507,7 @@ const bookingDetail = async (req, res) => {
                     const [local] = await db.sequelize.query(`
                         SELECT
                             b.id bookingId,
+                            b.supplierId supplierId,
                             b.agencyBookingId localBookingId,
                             b.bookingId bookingMgBookingID,
                             b.mgBookingVersionID bookingMgBookingVersionID,

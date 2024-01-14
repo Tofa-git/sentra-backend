@@ -1,7 +1,7 @@
 "use strict"
 
 module.exports = (sequelize, DataTypes) => {
-    const model = sequelize.define('ms_bedType', {
+    const model = sequelize.define('ms_bedtype', {
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,
