@@ -1457,8 +1457,7 @@ const bookingDetail = async (req, res) => {
             ...decryptedData,
             supplier: supplierData ? supplierData.toJSON() : null,
         };
-
-        console.log(responseData)
+        
         // Parse the JSON string in the body
         const bodyData = JSON.parse(responseData.body);
 
@@ -1502,7 +1501,7 @@ const bookingDetail = async (req, res) => {
 
         axios(config)
             .then(async function (data) {
-                // console.log(data.data.Success.BookingDetailsList)
+                console.log(config)
                 if (data.data.status) {
                     const [local] = await db.sequelize.query(`
                         SELECT
