@@ -330,6 +330,7 @@ const searchHotels = async (req, res) => {
                                 total: cheapestHotelsArray.length
                             }))
                         }
+                        
                     })
                     .catch(error => {
                         // console.log(error)
