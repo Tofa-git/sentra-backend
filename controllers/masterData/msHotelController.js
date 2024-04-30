@@ -242,7 +242,6 @@ const listDropdown = async (req, res) => {
                 'name',
             ],
         });
-
         res.status(200).send(responseSuccess('Success', data));
     } catch (error) {
         res.status(500).send(responseError(error))
