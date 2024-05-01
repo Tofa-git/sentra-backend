@@ -14,7 +14,7 @@ const create = async (req, res) => {
         const hotel = await hotelModel.create({
             countryId: req.body.countryId,
             cityId: req.body.cityId,
-            continent: req.body.continent,            
+            continent: req.body.continent,
             name: req.body.name,
             code: req.body.name,
             email: req.body.email,
@@ -43,7 +43,7 @@ const create = async (req, res) => {
 
 const list = async (req, res) => {
     try {
-        const whereConditions = {            
+        const whereConditions = {
             [Op.or]: [
                 {
                     code: {
@@ -57,9 +57,9 @@ const list = async (req, res) => {
                 },
             ],
         };
-        
-         // Add countryId to whereConditions if it exists in req.body
-         if (req.query.countryId) {
+
+        // Add countryId to whereConditions if it exists in req.body
+        if (req.query.countryId) {
             whereConditions.countryId = req.query.countryId;
         }
 
@@ -71,12 +71,12 @@ const list = async (req, res) => {
 
         const data = await hotelModel.findAndCountAll({
             attributes: [
-                'id',                
+                'id',
                 'countryId',
-                'cityId', 
+                'cityId',
                 'code',
                 'name',
-                'status',                                
+                'status',
                 'continent',
                 'address',
                 'zipCode',
@@ -108,24 +108,24 @@ const list = async (req, res) => {
             ],
         });
 
-       
 
-         // Retrieve the suppman data for each entry
-         const responseData = await Promise.all(
+
+        // Retrieve the suppman data for each entry
+        const responseData = await Promise.all(
             data.rows.map(async (entry) => {
-                
+
                 const masterCountry = await countryDataModel.findOne({
                     where: { id: entry.countryId },
-                    attributes: ['id', 'isoId', 'iso3', 'name','basicCurrency','descCurrency', 'status'],
+                    attributes: ['id', 'isoId', 'iso3', 'name', 'basicCurrency', 'descCurrency', 'status'],
                 });
-        
+
                 const masterCity = await cityDataModel.findOne({
                     where: { id: entry.cityId },
-                    attributes: ['id', 'code', 'long_name','short_name', 'status'],
+                    attributes: ['id', 'code', 'long_name', 'short_name', 'status'],
                 });
-             
+
                 return {
-                    ...entry.toJSON(),                  
+                    ...entry.toJSON(),
                     country: masterCountry,
                     city: masterCity,
                 };
@@ -149,7 +149,7 @@ const detail = async (req, res) => {
             attributes: [
                 'countryId',
                 'cityId',
-                'continent',                
+                'continent',
                 'name',
                 'code',
                 'email',
@@ -195,7 +195,7 @@ const update = async (req, res) => {
         await hotelModel.update({
             countryId: req.body.countryId,
             cityId: req.body.cityId,
-            ccontinent: req.body.cityId,            
+            ccontinent: req.body.cityId,
             name: req.body.name,
             code: req.body.code,
             email: req.body.email,
