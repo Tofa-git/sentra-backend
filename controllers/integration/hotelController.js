@@ -124,8 +124,11 @@ const searchHotels = async (req, res) => {
                     bodyData.Language = req.body.language;
                     bodyData.Country = mappingCountryData.code;
                     bodyData.City = mappingCityData.code;
+                    bodyData.Nationality = req.body.nationality;
+                    bodyData.Currency = req.body.currency;
 
                     bodyData.Hotels.Code.splice(0, 1); // Remove the element at the found index
+                    
                 }
 
                 if (bodyData.Rooms && Array.isArray(bodyData.Rooms.Room)) {
@@ -139,13 +142,16 @@ const searchHotels = async (req, res) => {
                     bodyData.Rooms.Room.push(
                         {
                             "RoomNo": req.body.roomNo,
-                            "NoOfAdults": req.body.adult,
+                            "NoOfAdults": req.body.adults,
                             "NoOfChild": "",
                             "Child1Age": "",
                             "Child2Age": "",
                             "ExtraBed": false
                         }
                     );
+                    
+                    console.log(bodyData)
+                    console.log(bodyData.Rooms)
                 }
 
                 if (bodyData.Header) {
@@ -166,7 +172,7 @@ const searchHotels = async (req, res) => {
                     bodyData.Header.ClientID = item.user;
                     bodyData.Header.LicenseKey = item.password;
                     bodyData.LowestPriceOnly = req.body.lowestPriceOnly ?? true;
-                    bodyData.Destination.CityCode = req.body.cityCode ?? "1704";
+                    bodyData.Destination.CityCode = req.body.cityCode;
                     bodyData.CheckOutDate = req.body.checkOut;
                     bodyData.CheckInDate = req.body.checkIn;
                     bodyData.IsRealTime.Value = req.body.realTimeValue ?? false;
@@ -197,7 +203,7 @@ const searchHotels = async (req, res) => {
 
                 axios(config)
                     .then(async function (data) {
-                        console.log(data.data)
+                        
                         if (data.data.sessionID) {
                             let hotels = data?.data?.hotels?.hotel;
 
@@ -324,6 +330,7 @@ const searchHotels = async (req, res) => {
                                 total: cheapestHotelsArray.length
                             }))
                         }
+                        
                     })
                     .catch(error => {
                         // console.log(error)

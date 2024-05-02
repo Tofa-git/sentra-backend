@@ -144,6 +144,9 @@ const listDropdown = async (req, res) => {
                 ['long_name', 'longName'],
             ],
             where: { countryId: req.query.countryId },
+            order: [
+                ['long_name', 'ASC'], // Sort by short_name in ascending order
+            ],
         });
 
         res.status(200).send(responseSuccess('Success', data));
